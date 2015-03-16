@@ -2,6 +2,8 @@
 /**
  * A class for sending email with phpmailer
  *
+ * Started: 02-02-2013
+ * Updated: 16-03-2015
  * @author Giannis Panagiotou <bone.jp@gmail.com>
  * @version 1.0
  * @source https://github.com/giannis/email
@@ -123,7 +125,7 @@ class Email {
      * 
      * @return boolean true on success
      */
-    private function _send_email($param) {
+    private function _send_email($param, $attachments) {
         if (!isset($param["email_to"]))
             return false;
 
@@ -172,6 +174,12 @@ class Email {
         $mail->AltBody = $message;
         $mail->MsgHTML($html_message);
         $mail->CharSet = 'UTF-8';
+
+        if (!empty($attachments)) {
+            foreach($attachments as $attachment) {
+                $mail->AddAttachment($attachment["path"], $attachment["name"]);
+            }
+        }
 
         if (!$mail->Send()) {
             //mail($email_to, $subject, $message, "From: $email_from\r\nReply-To: $email_from\r\nX-Mailer: DT_formmail");
@@ -227,7 +235,7 @@ class Email {
         return $mail_param;
     }
     
-    static public function send($param="", $extra=array()) {
+    static public function send($param="", $extra=array(), $attachments=array()) {
         $that = static::$instance;
         
         if (empty($param))
@@ -240,7 +248,7 @@ class Email {
         if (!is_array($valid))
             return response_message("EMAIL_FAIL", $valid);
 
-        $mail_response = $that->_send_email($valid);
+        $mail_response = $that->_send_email($valid, $attachments);
 
         if ($mail_response !== true)
             return response_message("EMAIL_FAIL", "email not send: " . $mail_response);
