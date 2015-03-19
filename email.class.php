@@ -144,7 +144,10 @@ class Email {
             $message = ob_get_contents();
             ob_end_clean();
             
-            $html_message = preg_replace('/\\n/', '<br/>', $message);
+            if (empty($param["html_template"]))
+                $html_message = preg_replace('/\\n/', '<br/>', $message);
+            else
+                $html_message = $message;
         }
 
         require_once($this->phpmailer_loc);
@@ -229,9 +232,14 @@ class Email {
             $mail_param[isset($value["id"]) ? $value["id"] : $key] = $param[$key];
         }
         
-        if (file_exists($this->template_dir . $type . ".php"))
+        if (file_exists($this->template_dir . $type . ".php")) {
             $mail_param["template"] = $this->template_dir . $type . ".php";
-        
+
+            if (!empty($this->mail_maps[$type]["html_template"])) {
+                $mail_param["html_template"] = true;
+            }
+        }
+
         return $mail_param;
     }
     
@@ -254,6 +262,30 @@ class Email {
             return response_message("EMAIL_FAIL", "email not send: " . $mail_response);
 
         return response_message("SUCCESS", "email send");
+    }
+
+    static public function view($type) {
+        $that = static::$instance;
+        
+        if (empty($type))
+            return response_message("EMAIL_FAIL", "Email view not found");
+        
+        $param = $that->validate($type, $_REQUEST);
+
+        if (!is_array($param))
+            return response_message("NOT_FOUND", $param);
+
+        if (empty($param["template"]))
+            return response_message("NOT_FOUND", "Email template not found");
+        
+        $param["view_mode"] = true;
+
+        ob_start();
+        require_once $param["template"];
+        $message = ob_get_contents();
+        ob_end_clean();
+
+        return response_message("SUCCESS", $message, array("content_type"=>"html"));
     }
 }
 ?>
