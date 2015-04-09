@@ -132,12 +132,12 @@ class Email {
         $email_to   = $param["email_to"];
         $to_name    = !empty($param["to_name"]) ? $param["to_name"] : "";
         $email_from = !empty($param["email_from"]) ? $param["email_from"] : $this->default_email;
-        $from_name  = !empty($param["from_name"]) ? ("=?UTF-8?B?" . base64_encode($param["from_name"]) . "?=") : $this->default_name;
+        $from_name  = !empty($param["from_name"]) ? $param["from_name"] : $this->default_name;
         $subject    = !empty($param["subject"]) ? ("=?UTF-8?B?" . base64_encode($param["subject"]) . "?=") : "";
         $message    = !empty($param["message"]) ? $param["message"] : "";
         $from_name_encoded = "=?UTF-8?B?" . base64_encode($from_name) . "?=";
         $html_message = $message;
-        
+
         if (isset($param["template"])) {
             ob_start();
             require_once $param["template"];
