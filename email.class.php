@@ -154,7 +154,7 @@ class Email {
 
         $mail = new PHPMailer();
 
-        if ($this->use_smtp && $email_from == $smtp_username) {
+        if ($this->use_smtp && isset($smtp_username) && $email_from == $smtp_username) {
             require_once(MAIL_SMTP_CONFIG);
 
             $mail->isSMTP();
