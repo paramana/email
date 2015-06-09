@@ -3,7 +3,7 @@
  * A class for sending email with phpmailer
  *
  * Started: 02-02-2013
- * Updated: 09-04-2015
+ * Updated: 09-06-2015
  * @author Giannis Panagiotou <bone.jp@gmail.com>
  * @version 1.0
  * @source https://github.com/giannis/email
@@ -48,6 +48,8 @@ class Email {
      * 
      */
     private $phpmailer_loc = "phpmailer.class.php";
+
+    public $print_output = true;
 
     /**
      * Class constructor
@@ -113,6 +115,13 @@ class Email {
      */
     public function set_mail_maps($mail_maps = array()) {
         $this->mail_maps = $mail_maps;
+    }
+
+    private function _response_output($status="SUCCESS", $message="", $opt=array()){
+        if (!$this->print_output)
+            return $message;
+
+        return response_message($status, $message, $opt);
     }
 
     /**
@@ -247,36 +256,36 @@ class Email {
         $that = static::$instance;
         
         if (empty($param))
-            return response_message("EMAIL_FAIL", "no parameters passed");
+            return $that->_response_output("EMAIL_FAIL", "no parameters passed");
         
         $extra = array_merge($extra, $_REQUEST);
         
         $valid = $that->validate($param, $extra);
         
         if (!is_array($valid))
-            return response_message("EMAIL_FAIL", $valid);
+            return $that->_response_output("EMAIL_FAIL", $valid);
 
         $mail_response = $that->_send_email($valid, $attachments);
 
         if ($mail_response !== true)
-            return response_message("EMAIL_FAIL", "email not send: " . $mail_response);
+            return $that->_response_output("EMAIL_FAIL", "email not send: " . $mail_response);
 
-        return response_message("SUCCESS", "email send");
+        return $that->_response_output("SUCCESS", "email send");
     }
 
     static public function view($type) {
         $that = static::$instance;
         
         if (empty($type))
-            return response_message("EMAIL_FAIL", "Email view not found");
+            return $that->_response_output("EMAIL_FAIL", "Email view not found");
         
         $param = $that->validate($type, $_REQUEST);
 
         if (!is_array($param))
-            return response_message("NOT_FOUND", $param);
+            return $that->_response_output("NOT_FOUND", $param);
 
         if (empty($param["template"]))
-            return response_message("NOT_FOUND", "Email template not found");
+            return $that->_response_output("NOT_FOUND", "Email template not found");
         
         $param["view_mode"] = true;
 
@@ -285,7 +294,7 @@ class Email {
         $message = ob_get_contents();
         ob_end_clean();
 
-        return response_message("SUCCESS", $message, array("content_type"=>"html"));
+        return $that->_response_output("SUCCESS", $message, array("content_type"=>"html"));
     }
 }
 ?>
