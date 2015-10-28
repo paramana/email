@@ -3,7 +3,7 @@
  * A class for sending email with phpmailer
  *
  * Started: 02-02-2013
- * Updated: 09-06-2015
+ * Updated: 28-10-2015
  * @author Giannis Panagiotou <bone.jp@gmail.com>
  * @version 1.0
  * @source https://github.com/giannis/email
@@ -152,6 +152,8 @@ class Email {
             require_once $param["template"];
             $message = ob_get_contents();
             ob_end_clean();
+
+            $message = $that->_parse_templates($message);
             
             if (empty($param["html_template"]))
                 $html_message = preg_replace('/\\n/', '<br/>', $message);
@@ -294,7 +296,27 @@ class Email {
         $message = ob_get_contents();
         ob_end_clean();
 
+        $message = $that->_parse_templates($message);
+
         return $that->_response_output("SUCCESS", $message, array("content_type"=>"html"));
+    }
+
+    private function _parse_templates($template){
+        $replacement   = array();
+        $language_json = json_decode(get_language_json(visitor_language()));
+
+        foreach($language_json->texts as $key=>$value){
+            $replacements[$key] = $value;
+        }
+
+        foreach($replacements as $key=>$value) {
+            $replacement = isset($value) ? $value : "";
+
+            $template = preg_replace("#[']*<%" . $key . "%>[']*#", json_encode($replacement), $template);
+            $template = preg_replace("#[']*\[%" . $key . "%\][']*#", $replacement, $template);
+        }
+
+        return $template;
     }
 }
 ?>
