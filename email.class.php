@@ -153,7 +153,7 @@ class Email {
             $message = ob_get_contents();
             ob_end_clean();
 
-            $message = $that->_parse_templates($message);
+            $message = $this->_parse_templates($message);
             
             if (empty($param["html_template"]))
                 $html_message = preg_replace('/\\n/', '<br/>', $message);
