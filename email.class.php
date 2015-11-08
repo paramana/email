@@ -3,7 +3,7 @@
  * A class for sending email with phpmailer
  *
  * Started: 02-02-2013
- * Updated: 28-10-2015
+ * Updated: 08-11-2015
  * @author Giannis Panagiotou <bone.jp@gmail.com>
  * @version 1.0
  * @source https://github.com/giannis/email
@@ -43,6 +43,8 @@ class Email {
      */
     private $template_dir = "";
 
+    private $use_smtp = false;
+
     /*
      * The phpmailer class path
      * 
@@ -75,7 +77,7 @@ class Email {
         if (defined("PHPMAILER_LOC"))
             $this->phpmailer_loc = PHPMAILER_LOC;
 
-        if (defined("MAIL_SMTP_CONFIG"))
+        if (defined("MAIL_SMTP_CONFIG") && !empty(MAIL_SMTP_CONFIG))
             $this->use_smtp = true;
     }
 
@@ -165,17 +167,20 @@ class Email {
 
         $mail = new PHPMailer();
 
-        if ($this->use_smtp && isset($smtp_username) && $email_from == $smtp_username) {
+        if ($this->use_smtp) {
             require_once(MAIL_SMTP_CONFIG);
 
-            $mail->isSMTP();
-            $mail->SMTPDebug  = 0;
-            $mail->SMTPAuth   = $smtp_auth;
-            $mail->SMTPSecure = $smtp_secure;
-            $mail->Host       = $smtp_host;
-            $mail->Port       = $smtp_port;
-            $mail->Username   = $smtp_username;
-            $mail->Password   = $smtp_password;
+            if (isset($smtp_username) && $email_from == $smtp_username) {
+
+                $mail->isSMTP();
+                $mail->SMTPDebug  = 0;
+                $mail->SMTPAuth   = $smtp_auth;
+                $mail->SMTPSecure = $smtp_secure;
+                $mail->Host       = $smtp_host;
+                $mail->Port       = $smtp_port;
+                $mail->Username   = $smtp_username;
+                $mail->Password   = $smtp_password;
+            }
         }
 
         $mail->From = $email_from;
