@@ -3,7 +3,7 @@
  * A class for sending email with phpmailer
  *
  * Started: 02-02-2013
- * Updated: 08-11-2015
+ * Updated: 17-11-2015
  * @author Giannis Panagiotou <bone.jp@gmail.com>
  * @version 1.0
  * @source https://github.com/giannis/email
@@ -151,7 +151,7 @@ class Email {
 
         if (isset($param["template"])) {
             ob_start();
-            require_once $param["template"];
+            require $param["template"];
             $message = ob_get_contents();
             ob_end_clean();
 
@@ -297,7 +297,7 @@ class Email {
         $param["view_mode"] = true;
 
         ob_start();
-        require_once $param["template"];
+        require $param["template"];
         $message = ob_get_contents();
         ob_end_clean();
 
