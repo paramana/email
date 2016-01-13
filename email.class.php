@@ -3,7 +3,7 @@
  * A class for sending email with phpmailer
  *
  * Started: 02-02-2013
- * Updated: 17-11-2015
+ * Updated: 13-01-2016
  * @author Giannis Panagiotou <bone.jp@gmail.com>
  * @version 1.0
  * @source https://github.com/giannis/email
@@ -167,11 +167,10 @@ class Email {
 
         $mail = new PHPMailer();
 
-        if ($this->use_smtp) {
+        if ($this->use_smtp && file_exists(MAIL_SMTP_CONFIG)) {
             require_once(MAIL_SMTP_CONFIG);
 
             if (isset($smtp_username) && $email_from == $smtp_username) {
-
                 $mail->isSMTP();
                 $mail->SMTPDebug  = 0;
                 $mail->SMTPAuth   = $smtp_auth;
