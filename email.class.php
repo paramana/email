@@ -3,7 +3,7 @@
  * A class for sending email with phpmailer
  *
  * Started: 02-02-2013
- * Updated: 13-01-2016
+ * Updated: 17-11-2015
  * @author Giannis Panagiotou <bone.jp@gmail.com>
  * @version 1.0
  * @source https://github.com/giannis/email
@@ -140,13 +140,16 @@ class Email {
         if (!isset($param["email_to"]))
             return false;
 
-        $email_to   = $param["email_to"];
-        $to_name    = !empty($param["to_name"]) ? $param["to_name"] : "";
-        $email_from = !empty($param["email_from"]) ? $param["email_from"] : $this->default_email;
-        $from_name  = !empty($param["from_name"]) ? $param["from_name"] : $this->default_name;
-        $subject    = !empty($param["subject"]) ? ("=?UTF-8?B?" . base64_encode($param["subject"]) . "?=") : "";
-        $message    = !empty($param["message"]) ? $param["message"] : "";
-        $from_name_encoded = "=?UTF-8?B?" . base64_encode($from_name) . "?=";
+        $email_to    = $param["email_to"];
+        $to_name     = !empty($param["to_name"]) ? $param["to_name"] : "";
+        $email_from  = !empty($param["email_from"]) ? $param["email_from"] : $this->default_email;
+        $email_reply = !empty($param["email_reply"]) ? $param["email_reply"] : $email_from;
+        $from_name   = !empty($param["from_name"]) ? $param["from_name"] : $this->default_name;
+        $subject     = !empty($param["subject"]) ? ("=?UTF-8?B?" . base64_encode($param["subject"]) . "?=") : "";
+        $message     = !empty($param["message"]) ? $param["message"] : "";
+        $from_name_encoded   = "=?UTF-8?B?" . base64_encode($from_name) . "?=";
+        $from_reply_name     = !empty($param["from_reply_name"]) ? $param["from_reply_name"] : $from_name;
+        $from_reply_name_enc = "=?UTF-8?B?" . base64_encode($from_reply_name) . "?=";
         $html_message = $message;
 
         if (isset($param["template"])) {
@@ -167,10 +170,11 @@ class Email {
 
         $mail = new PHPMailer();
 
-        if ($this->use_smtp && file_exists(MAIL_SMTP_CONFIG)) {
+        if ($this->use_smtp) {
             require_once(MAIL_SMTP_CONFIG);
 
             if (isset($smtp_username) && $email_from == $smtp_username) {
+
                 $mail->isSMTP();
                 $mail->SMTPDebug  = 0;
                 $mail->SMTPAuth   = $smtp_auth;
@@ -184,7 +188,7 @@ class Email {
 
         $mail->From = $email_from;
         $mail->FromName = $from_name_encoded;
-        $mail->AddReplyTo($email_from, $from_name_encoded);
+        $mail->AddReplyTo($email_reply, $from_reply_name_enc);
         $mail->SetFrom($email_from, $from_name_encoded);
 
         $mail->AddAddress($email_to, $to_name);
