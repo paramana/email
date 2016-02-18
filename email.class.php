@@ -3,7 +3,7 @@
  * A class for sending email with phpmailer
  *
  * Started: 02-02-2013
- * Updated: 17-11-2015
+ * Updated: 18-02-2016
  * @author Giannis Panagiotou <bone.jp@gmail.com>
  * @version 1.0
  * @source https://github.com/giannis/email
@@ -186,12 +186,15 @@ class Email {
             }
         }
 
+        $email_to_param = explode(",", $email_to);
+        foreach ($email_to_param as $email) {
+            $mail->AddAddress($email, $to_name);  
+        }
+        
         $mail->From = $email_from;
         $mail->FromName = $from_name_encoded;
         $mail->AddReplyTo($email_reply, $from_reply_name_enc);
         $mail->SetFrom($email_from, $from_name_encoded);
-
-        $mail->AddAddress($email_to, $to_name);
         $mail->Subject = $subject;
         $mail->AltBody = $message;
         $mail->MsgHTML($html_message);
@@ -244,8 +247,14 @@ class Email {
                 $param[$key] = stripslashes(strip_tags($param[$key]));
 
             if (!empty($value["validate"])) {
-                if ($value["validate"] == "email" && !filter_var($param[$key], FILTER_VALIDATE_EMAIL))
-                    return $key . " is not valid";
+                if ($value["validate"] == "email") {
+                    $email_param = explode(",", $param[$key]);
+
+                    foreach ($email_param as $email) {
+                        if (!filter_var($email, FILTER_VALIDATE_EMAIL))
+                            return $email . " is not valid";   
+                    }
+                }
             }
             
             $mail_param[isset($value["id"]) ? $value["id"] : $key] = $param[$key];
