@@ -69,8 +69,8 @@ class Email {
         if (defined("MAIL_DEFAULTS_EMAIL"))
             $this->default_email = MAIL_DEFAULTS_EMAIL;
 
-        if (defined("MAIL_DEFAULTS_TEMPLATES_DIR"))
-            $this->template_dir = MAIL_DEFAULTS_TEMPLATES_DIR;
+        if (defined("MAIL_TEMPLATES_DIR"))
+            $this->template_dir = MAIL_TEMPLATES_DIR;
         else
             $this->template_dir = __DIR__ . "/templates/";
 
