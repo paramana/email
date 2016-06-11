@@ -63,14 +63,14 @@ class Email {
         // throws an Exception
             throw new Exception("An instance of " . get_called_class() . " already exists.");
 
-        if (defined("MAIL_DEFAULTS_NAME"))
-            $this->default_name = MAIL_DEFAULTS_NAME;
+        if (defined("EMAIL_DEFAULT_NAME"))
+            $this->default_name = EMAIL_DEFAULT_NAME;
 
-        if (defined("MAIL_DEFAULTS_EMAIL"))
-            $this->default_email = MAIL_DEFAULTS_EMAIL;
+        if (defined("EMAIL_DEFAULT_ADDRESS"))
+            $this->default_email = EMAIL_DEFAULT_ADDRESS;
 
-        if (defined("MAIL_TEMPLATES_DIR"))
-            $this->template_dir = MAIL_TEMPLATES_DIR;
+        if (defined("EMAIL_TEMPLATES_DIR"))
+            $this->template_dir = EMAIL_TEMPLATES_DIR;
         else
             $this->template_dir = __DIR__ . "/templates/";
 

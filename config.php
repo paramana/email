@@ -1,9 +1,9 @@
 <?php
 /* the default name on email */
-define("MAIL_DEFAULTS_NAME", "its me");
+define("EMAIL_DEFAULT_NAME", "its me");
 
 /* the default email */
-define("MAIL_DEFAULTS_EMAIL", "email@domain.com");
+define("EMAIL_DEFAULT_ADDRESS", "email@domain.com");
 
 /* the phpmailer path */
 define("PHPMAILER_LOC", "phpmailer.class.php");
