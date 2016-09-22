@@ -1,9 +1,9 @@
 php email
 ===
 
-A simple php email class    
-It validates email parameters based on a set of rules    
-and sends it with phpmailer    
+A simple php email class
+It validates email parameters based on a set of rules
+and sends it with phpmailer
 
 Use it like:
 
