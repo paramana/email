@@ -1,0 +1,12 @@
+{
+	"name": "paramana/email",
+	"description": "",
+	"type": "library",
+	"licence": "",
+	"require": {},
+	"autoload": {
+		"classmap": [
+			"email.class.php"
+		]
+	}
+}
