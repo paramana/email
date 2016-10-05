@@ -3,7 +3,7 @@
  * A class for sending email with phpmailer
  *
  * Started: 02-02-2013
- * Updated: 18-02-2016
+ * Updated: 05-10-2016
  * @author Giannis Panagiotou <bone.jp@gmail.com>
  * @version 1.0
  * @source https://github.com/giannis/email
@@ -53,6 +53,13 @@ class Email {
 
     public $print_output = true;
 
+    private $smtp_auth;
+    private $smtp_secure;
+    private $smtp_host;
+    private $smtp_port;
+    private $smtp_username;
+    private $smtp_password;
+
     /**
      * Class constructor
      * 
@@ -77,8 +84,30 @@ class Email {
         if (defined("PHPMAILER_LOC"))
             $this->phpmailer_loc = PHPMAILER_LOC;
 
-        if (defined("MAIL_SMTP_CONFIG") && !empty(MAIL_SMTP_CONFIG))
+        if (defined("MAIL_SMTP_CONFIG") && !empty(MAIL_SMTP_CONFIG)) {
             $this->use_smtp = true;
+
+            if (file_extis(MAIL_SMTP_CONFIG)) {
+                require_once(MAIL_SMTP_CONFIG);
+
+                $this->smtp_auth     = $smtp_auth;
+                $this->smtp_secure   = $smtp_secure;
+                $this->smtp_host     = $smtp_host;
+                $this->smtp_port     = $smtp_port;
+                $this->smtp_username = $smtp_username;
+                $this->smtp_password = $smtp_password;
+            }
+        }
+
+        if (defined("SMTP_ENABLED") && !empty(SMTP_ENABLED)) {
+            $this->use_smtp      = true;
+            $this->smtp_auth     = SMTP_AUTH;
+            $this->smtp_secure   = SMTP_SECURE;
+            $this->smtp_host     = SMTP_HOST;
+            $this->smtp_port     = SMTP_PORT;
+            $this->smtp_username = SMTP_USERNAME;
+            $this->smtp_password = SMTP_PASSWORD;
+        }
     }
 
     /**
@@ -171,18 +200,16 @@ class Email {
         $mail = new PHPMailer();
 
         if ($this->use_smtp) {
-            require_once(MAIL_SMTP_CONFIG);
-
-            if (isset($smtp_username) && $email_from == $smtp_username) {
+            if (isset($this->smtp_username) && $email_from == $this->smtp_username) {
 
                 $mail->isSMTP();
                 $mail->SMTPDebug  = 0;
-                $mail->SMTPAuth   = $smtp_auth;
-                $mail->SMTPSecure = $smtp_secure;
-                $mail->Host       = $smtp_host;
-                $mail->Port       = $smtp_port;
-                $mail->Username   = $smtp_username;
-                $mail->Password   = $smtp_password;
+                $mail->SMTPAuth   = $this->smtp_auth;
+                $mail->SMTPSecure = $this->smtp_secure;
+                $mail->Host       = $this->smtp_host;
+                $mail->Port       = $this->smtp_port;
+                $mail->Username   = $this->smtp_username;
+                $mail->Password   = $this->smtp_password;
             }
         }
 
