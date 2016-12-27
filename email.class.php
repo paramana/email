@@ -45,12 +45,6 @@ class Email {
 
     private $use_smtp = false;
 
-    /*
-     * The phpmailer class path
-     * 
-     */
-    private $phpmailer_loc = "phpmailer.class.php";
-
     public $print_output = true;
 
     private $smtp_auth;
@@ -80,9 +74,6 @@ class Email {
             $this->template_dir = EMAIL_TEMPLATES_DIR;
         else
             $this->template_dir = __DIR__ . "/templates/";
-
-        if (defined("PHPMAILER_LOC"))
-            $this->phpmailer_loc = PHPMAILER_LOC;
 
         if (defined("MAIL_SMTP_CONFIG") && !empty(MAIL_SMTP_CONFIG)) {
             $this->use_smtp = true;
@@ -195,8 +186,6 @@ class Email {
                 $html_message = $message;
         }
 
-        require_once($this->phpmailer_loc);
-
         $mail = new PHPMailer();
 
         if ($this->use_smtp) {
@@ -252,7 +241,7 @@ class Email {
      * 
      */
     private function validate($type="", $param=array()) {
-        if (empty($this->mail_maps[$type]))
+        if (!array_key_exists($type, $this->mail_maps) || empty($this->mail_maps[$type]))
             return "No email map found";
 
         $mail_param = array();
@@ -346,6 +335,10 @@ class Email {
     }
 
     private function _parse_templates($template){
+        if (!(defined('get_language_json') && defined('visitor_language'))) {
+            return $template;
+        }
+            
         $replacement   = array();
         $language_json = json_decode(get_language_json(visitor_language()));
 
