@@ -1,4 +1,5 @@
 <?php
+require __DIR__ . '/../vendor/autoload.php';
 require "messages.php";
 require "config.php";
 require "email.class.php";
@@ -14,14 +15,13 @@ $mail_maps = array(
     )
 );
 
-$Email = Email::i();
-$Email->set_mail_maps($mail_maps);
+$email = Email::i();
+$email->set_mail_maps($mail_maps);
 
-$Email->send(array("contact"), array(
+$email->send("contact", array(
     "subject" => "hey mate",
     "name" => "me",
     "email" => "someone@anyone.com",
     "message" => "how are you?",
     "extra_msg"=>"again?"
 ));
-?>

@@ -2,8 +2,10 @@
 	"name": "paramana/email",
 	"description": "",
 	"type": "library",
-	"licence": "",
-	"require": {},
+	"license": "",
+	"require": {
+		"phpmailer/phpmailer": "^5.2"
+	},
 	"autoload": {
 		"classmap": [
 			"email.class.php"
