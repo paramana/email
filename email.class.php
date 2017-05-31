@@ -67,7 +67,7 @@ class Email {
         if (defined("MAIL_SMTP_CONFIG") && !empty(MAIL_SMTP_CONFIG)) {
             $this->use_smtp = true;
 
-            if (file_extis(MAIL_SMTP_CONFIG)) {
+            if (file_exists(MAIL_SMTP_CONFIG)) {
                 require_once(MAIL_SMTP_CONFIG);
 
                 $this->smtp_auth     = $smtp_auth;
