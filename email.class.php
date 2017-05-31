@@ -335,7 +335,7 @@ class Email {
     }
 
     private function _parse_templates($template){
-        if (!(defined('get_language_json') && defined('visitor_language'))) {
+        if (!(function_exists('get_language_json') && function_exists('visitor_language'))) {
             return $template;
         }
             
