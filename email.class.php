@@ -8,21 +8,16 @@
  * @version 1.0
  * @source https://github.com/giannis/email
  * @package phpmailer
- * 
  */
 class Email {
 
     /**
-     * private static $instance variable
-     * if not present, nothing will
-     * be executed - Fatal error
-     * 
+     * if not present, nothing will be executed - Fatal error
      */
     private static $instance;
 
     /*
-     * The maping of mailing types and fields
-     * 
+     * The mapping of mailing types and fields
      */
     private $mail_maps = array();
 
@@ -33,13 +28,11 @@ class Email {
 
     /*
      * The default email address
-     * 
      */
     private $default_email = "";
 
     /*
      * The location of the email templates
-     * 
      */
     private $template_dir = "";
 
@@ -54,10 +47,6 @@ class Email {
     private $smtp_username;
     private $smtp_password;
 
-    /**
-     * Class constructor
-     * 
-     */
     final private function __construct() {
         // if called twice ....
         if (isset(static::$instance))
@@ -104,7 +93,6 @@ class Email {
     /**
      * No clone allowed, 
      * both internally and externally
-     * 
      */
     final private function __clone() {
         throw new Exception("An instance of " . get_called_class() . " cannot be cloned.");
@@ -112,7 +100,6 @@ class Email {
 
     /**
      * the common sense method to retrieve the instance
-     * 
      */
     final public static function i() {
         return isset(static::$instance) ? static::$instance : static::$instance = new static;
@@ -122,7 +109,6 @@ class Email {
      * PHP5 style destructor
      * 
      * @return bool true
-     * 
      */
     function __destruct() {
         return true;
@@ -133,7 +119,6 @@ class Email {
      * Sets the mail maps
      * 
      * @param array $mail_maps
-     * 
      */
     public function set_mail_maps($mail_maps = array()) {
         $this->mail_maps = $mail_maps;
@@ -149,10 +134,8 @@ class Email {
     /**
      * Sends an email
      * 
-     * @param <type> $email_to to send to
-     * @param <type> $email_from
-     * @param <type> $subject
-     * @param <type> $message 
+     * @param array $param email parameters
+     * @param array $attachments
      * 
      * @return boolean true on success
      */
@@ -232,13 +215,12 @@ class Email {
     }
 
     /*
-     * Checks the email parameteres based on the list of options
+     * Checks the email parameters based on the list of options
      * from the mail_maps
      * 
-     * @param array $param the parameteres passed
+     * @param array $param the parameters passed
      * 
      * @return mixed depends on the handle of your response function
-     * 
      */
     private function validate($type="", $param=array()) {
         if (!array_key_exists($type, $this->mail_maps) || empty($this->mail_maps[$type]))
