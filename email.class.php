@@ -329,7 +329,7 @@ class Email {
             $replacements[$key] = $value;
         }
 
-        while (strpos($template), '[%') {
+        while (strpos($template, '[%')) {
             foreach($replacements as $key=>$value) {
                 $replacement = isset($value) ? $value : "";
 
