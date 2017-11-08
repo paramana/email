@@ -318,14 +318,19 @@ class Email {
     }
 
     private function _parse_templates($template){
-        if (!(function_exists('get_language_json') && function_exists('visitor_language'))) {
+        if (!(function_exists('get_language_json') && function_exists('visitor_language') && function_exists('get_app_settings'))) {
             return $template;
         }
-            
-        $replacement   = array();
-        $language_json = json_decode(get_language_json(visitor_language()));
 
-        foreach($language_json->texts as $key=>$value){
+        $replacements = array();    
+        $language_json = json_decode(get_language_json(visitor_language()));
+        $app_settings    = (array) get_app_settings();
+        if (!empty($app_settings["router_paths"])) {
+            unset($app_settings["router_paths"]);
+        }
+        $language_json->texts = (object) array_merge((array) $language_json->texts, $app_settings);
+        
+        foreach ($language_json->texts as $key=>$value) {
             $replacements[$key] = $value;
         }
 
@@ -337,7 +342,6 @@ class Email {
                 $template = preg_replace("#[']*\[%" . $key . "%\][']*#", $replacement, $template);
             } 
         }
-       
 
         return $template;
     }
