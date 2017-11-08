@@ -125,8 +125,12 @@ class Email {
     }
 
     private function _response_output($status="SUCCESS", $message="", $opt=array()){
-        if (!$this->print_output)
+        if (!$this->print_output) {
+            if ($status != "SUCCESS")
+                return array("status"=>$status, "message"=>$message);
+
             return $message;
+        }
 
         return response_message($status, $message, $opt);
     }
