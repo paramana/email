@@ -329,12 +329,15 @@ class Email {
             $replacements[$key] = $value;
         }
 
-        foreach($replacements as $key=>$value) {
-            $replacement = isset($value) ? $value : "";
+        while (strpos($template), '[%') {
+            foreach($replacements as $key=>$value) {
+                $replacement = isset($value) ? $value : "";
 
-            $template = preg_replace("#[']*<%" . $key . "%>[']*#", json_encode($replacement), $template);
-            $template = preg_replace("#[']*\[%" . $key . "%\][']*#", $replacement, $template);
+                $template = preg_replace("#[']*<%" . $key . "%>[']*#", json_encode($replacement), $template);
+                $template = preg_replace("#[']*\[%" . $key . "%\][']*#", $replacement, $template);
+            } 
         }
+       
 
         return $template;
     }
