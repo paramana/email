@@ -200,6 +200,8 @@ class Email {
         $mail->SetFrom($email_from, $from_name_encoded);
         $mail->Subject = $subject;
         $mail->AltBody = $message;
+        //NOTE: After updating on php.mailer > 6 check if this is still necessary
+        $html_message = preg_replace('/\s+/', ' ', $html_message);
         $mail->MsgHTML($html_message);
         $mail->CharSet = 'UTF-8';
 
@@ -321,23 +323,52 @@ class Email {
     }
 
     private function _parse_templates($template){
-        if (!(function_exists('get_language_json') && function_exists('visitor_language'))) {
+        if (!(function_exists('get_language_json') && function_exists('visitor_language') && function_exists('get_app_settings'))) {
             return $template;
         }
-            
-        $replacement   = array();
-        $language_json = json_decode(get_language_json(visitor_language()));
 
-        foreach($language_json->texts as $key=>$value){
+        $replacements  = array();    
+        $language_json = json_decode(get_language_json(visitor_language()));
+        $app_settings  = (array) get_app_settings();
+
+        if ($app_settings) {
+            foreach($app_settings as $key=>$value){
+                if ($key == "router_paths")
+                    continue;
+    
+                $replacements[$key] = $value;
+            }
+        }
+        
+        foreach ($language_json->texts as $key=>$value) {
+            if (is_string($value)) {
+                preg_match_all("/\[%(.+?)%\]/", $value, $matches);
+
+                for ($i = 0; $i < count($matches[0]); $i++) {
+                    $value = str_replace($matches[0][$i], !empty($replacements[$matches[1][$i]]) ? $replacements[$matches[1][$i]] : "", $value);
+                }
+            }
+
             $replacements[$key] = $value;
         }
 
         foreach($replacements as $key=>$value) {
             $replacement = isset($value) ? $value : "";
 
+            if (!is_string($replacement)) {
+                $replacement = json_encode($replacement);
+            }
+            else {
+                preg_match_all("/\[%(.+?)%\]/", $replacement, $matches);
+    
+                for ($i = 0; $i < count($matches[0]); $i++) {
+                    $value = str_replace($matches[0][$i], !empty($replacements[$matches[1][$i]]) ? $replacements[$matches[1][$i]] : "", $value);
+                }
+            }
+
             $template = preg_replace("#[']*<%" . $key . "%>[']*#", json_encode($replacement), $template);
             $template = preg_replace("#[']*\[%" . $key . "%\][']*#", $replacement, $template);
-        }
+        } 
 
         return $template;
     }
