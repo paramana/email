@@ -200,6 +200,7 @@ class Email {
         $mail->SetFrom($email_from, $from_name_encoded);
         $mail->Subject = $subject;
         $mail->AltBody = $message;
+        //NOTE: After updating on php.mailer > 6 check if this is still necessary
         $html_message = preg_replace('/\s+/', ' ', $html_message);
         $mail->MsgHTML($html_message);
         $mail->CharSet = 'UTF-8';
