@@ -20,6 +20,11 @@ class Email {
      * The mapping of mailing types and fields
      */
     private $mail_maps = array();
+    
+    /*
+     * The mapping of smtp confugiration
+     */
+    private $smtp_config_map = array();
 
     /*
      * The default name
@@ -40,6 +45,8 @@ class Email {
 
     public $print_output = true;
 
+    public $debug = 0;
+
     private $smtp_auth;
     private $smtp_secure;
     private $smtp_host;
@@ -52,6 +59,10 @@ class Email {
         if (isset(static::$instance))
         // throws an Exception
             throw new Exception("An instance of " . get_called_class() . " already exists.");
+
+        if (defined("DEBUG") && DEBUG == true) {
+            $this->debug = 3;
+        }
 
         if (defined("EMAIL_DEFAULT_NAME"))
             $this->default_name = EMAIL_DEFAULT_NAME;
@@ -78,8 +89,7 @@ class Email {
                 $this->smtp_password = $smtp_password;
             }
         }
-
-        if (defined("SMTP_ENABLED") && !empty(SMTP_ENABLED)) {
+        else if (defined("SMTP_ENABLED") && !empty(SMTP_ENABLED) && defined("SMTP_USERNAME")) {
             $this->use_smtp      = true;
             $this->smtp_auth     = SMTP_AUTH;
             $this->smtp_secure   = SMTP_SECURE;
@@ -122,6 +132,14 @@ class Email {
      */
     public function set_mail_maps($mail_maps = array()) {
         $this->mail_maps = $mail_maps;
+    }
+
+    public function set_smtp_config_map($smtp_config_map = array()) {
+        if (empty($smtp_config_map))
+            return;
+            
+        $this->use_smtp = true;
+        $this->smtp_config_map = $smtp_config_map;
     }
 
     private function _response_output($status="SUCCESS", $message="", $opt=array()){
@@ -176,10 +194,19 @@ class Email {
         $mail = new PHPMailer();
 
         if ($this->use_smtp) {
-            if (isset($this->smtp_username) && $email_from == $this->smtp_username) {
-
+            if ($this->smtp_config_map && !empty($this->smtp_config_map[$email_from])) {
                 $mail->isSMTP();
-                $mail->SMTPDebug  = 0;
+                $mail->SMTPDebug  = $this->debug;
+                $mail->SMTPAuth   = $this->smtp_config_map[$email_from]["auth"];
+                $mail->SMTPSecure = $this->smtp_config_map[$email_from]["secure"];
+                $mail->Host       = $this->smtp_config_map[$email_from]["host"];
+                $mail->Port       = $this->smtp_config_map[$email_from]["port"];
+                $mail->Username   = $this->smtp_config_map[$email_from]["username"];
+                $mail->Password   = $this->smtp_config_map[$email_from]["password"];
+            }
+            else if (isset($this->smtp_username) && $email_from == $this->smtp_username) {
+                $mail->isSMTP();
+                $mail->SMTPDebug  = $this->debug;
                 $mail->SMTPAuth   = $this->smtp_auth;
                 $mail->SMTPSecure = $this->smtp_secure;
                 $mail->Host       = $this->smtp_host;
