@@ -165,7 +165,7 @@ class Email {
         if (!isset($param["email_to"]))
             return false;
 
-        $email_to    = $param["email_to"];
+        $email_to    = (!defined('APP_ENV') || APP_ENV == "production") ? $param["email_to"] : $this->default_email;
         $to_name     = !empty($param["to_name"]) ? $param["to_name"] : "";
         $email_from  = !empty($param["email_from"]) ? $param["email_from"] : $this->default_email;
         $email_reply = !empty($param["email_reply"]) ? $param["email_reply"] : $email_from;
