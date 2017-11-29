@@ -32,3 +32,40 @@ Use it like:
 	    "email"=>"someone@anyone.com",
 	    "message"=>"how are you?"
 	    ));
+	    
+	    
+You can pass the smtp configuration as a array like
+```
+array(2) {
+  ["email@platform"]=>
+  array(6) {
+    ["username"]=>
+    string(0) ""
+    ["password"]=>
+    string(0) ""
+    ["host"]=>
+    string(20) "smtp-relay.gmail.com"
+    ["port"]=>
+    string(3) "587"
+    ["secure"]=>
+    string(3) "tls"
+    ["auth"]=>
+    string(1) "1"
+  }
+  ["email@platform2"]=>
+  array(6) {
+    ["username"]=>
+    string(0) ""
+    ["password"]=>
+    string(0) ""
+    ["host"]=>
+    string(20) "smtp-relay.gmail.com"
+    ["port"]=>
+    string(3) "587"
+    ["secure"]=>
+    string(3) "tls"
+    ["auth"]=>
+    string(1) "1"
+  }
+}
+```
