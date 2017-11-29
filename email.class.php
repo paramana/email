@@ -22,6 +22,11 @@ class Email {
     private $mail_maps = array();
 
     /*
+     * The mapping of smtp confugiration
+     */
+    private $smtp_config_map = array();
+
+    /*
      * The default name
      */
     private $default_name = "";
@@ -40,6 +45,8 @@ class Email {
 
     public $print_output = true;
 
+    public $debug = 0;
+
     private $smtp_auth;
     private $smtp_secure;
     private $smtp_host;
@@ -52,6 +59,10 @@ class Email {
         if (isset(static::$instance))
         // throws an Exception
             throw new Exception("An instance of " . get_called_class() . " already exists.");
+
+        if (defined("EMAIL_DEBUG") && EMAIL_DEBUG == true) {
+            $this->debug = 3;
+        }
 
         if (defined("EMAIL_DEFAULT_NAME"))
             $this->default_name = EMAIL_DEFAULT_NAME;
@@ -78,8 +89,7 @@ class Email {
                 $this->smtp_password = $smtp_password;
             }
         }
-
-        if (defined("SMTP_ENABLED") && !empty(SMTP_ENABLED)) {
+        else if (defined("SMTP_ENABLED") && !empty(SMTP_ENABLED) && defined("SMTP_USERNAME")) {
             $this->use_smtp      = true;
             $this->smtp_auth     = SMTP_AUTH;
             $this->smtp_secure   = SMTP_SECURE;
@@ -91,7 +101,7 @@ class Email {
     }
 
     /**
-     * No clone allowed, 
+     * No clone allowed,
      * both internally and externally
      */
     final private function __clone() {
@@ -104,10 +114,10 @@ class Email {
     final public static function i() {
         return isset(static::$instance) ? static::$instance : static::$instance = new static;
     }
-    
+
     /**
      * PHP5 style destructor
-     * 
+     *
      * @return bool true
      */
     function __destruct() {
@@ -115,13 +125,21 @@ class Email {
     }
 
     /**
-     * 
+     *
      * Sets the mail maps
-     * 
+     *
      * @param array $mail_maps
      */
     public function set_mail_maps($mail_maps = array()) {
         $this->mail_maps = $mail_maps;
+    }
+
+    public function set_smtp_config_map($smtp_config_map = array()) {
+        if (empty($smtp_config_map))
+            return;
+
+        $this->use_smtp = true;
+        $this->smtp_config_map = $smtp_config_map;
     }
 
     private function _response_output($status="SUCCESS", $message="", $opt=array()){
@@ -137,17 +155,17 @@ class Email {
 
     /**
      * Sends an email
-     * 
+     *
      * @param array $param email parameters
      * @param array $attachments
-     * 
+     *
      * @return boolean true on success
      */
     private function _send_email($param, $attachments) {
         if (!isset($param["email_to"]))
             return false;
 
-        $email_to    = $param["email_to"];
+        $email_to    = (!defined('APP_ENV') || APP_ENV != "production") ? $this->default_email : $param["email_to"];
         $to_name     = !empty($param["to_name"]) ? $param["to_name"] : "";
         $email_from  = !empty($param["email_from"]) ? $param["email_from"] : $this->default_email;
         $email_reply = !empty($param["email_reply"]) ? $param["email_reply"] : $email_from;
@@ -166,7 +184,7 @@ class Email {
             ob_end_clean();
 
             $message = $this->_parse_templates($message);
-            
+
             if (empty($param["html_template"]))
                 $html_message = preg_replace('/\\n/', '<br/>', $message);
             else
@@ -176,10 +194,19 @@ class Email {
         $mail = new PHPMailer();
 
         if ($this->use_smtp) {
-            if (isset($this->smtp_username) && $email_from == $this->smtp_username) {
-
+            if ($this->smtp_config_map && !empty($this->smtp_config_map[$email_from])) {
                 $mail->isSMTP();
-                $mail->SMTPDebug  = 0;
+                $mail->SMTPDebug  = $this->debug;
+                $mail->SMTPAuth   = $this->smtp_config_map[$email_from]["auth"];
+                $mail->SMTPSecure = $this->smtp_config_map[$email_from]["secure"];
+                $mail->Host       = $this->smtp_config_map[$email_from]["host"];
+                $mail->Port       = $this->smtp_config_map[$email_from]["port"];
+                $mail->Username   = $this->smtp_config_map[$email_from]["username"];
+                $mail->Password   = $this->smtp_config_map[$email_from]["password"];
+            }
+            else if (isset($this->smtp_username) && $email_from == $this->smtp_username) {
+                $mail->isSMTP();
+                $mail->SMTPDebug  = $this->debug;
                 $mail->SMTPAuth   = $this->smtp_auth;
                 $mail->SMTPSecure = $this->smtp_secure;
                 $mail->Host       = $this->smtp_host;
@@ -191,9 +218,9 @@ class Email {
 
         $email_to_param = explode(",", $email_to);
         foreach ($email_to_param as $email) {
-            $mail->AddAddress($email, $to_name);  
+            $mail->AddAddress($email, $to_name);
         }
-        
+
         $mail->From = $email_from;
         $mail->FromName = $from_name_encoded;
         $mail->AddReplyTo($email_reply, $from_reply_name_enc);
@@ -223,9 +250,9 @@ class Email {
     /*
      * Checks the email parameters based on the list of options
      * from the mail_maps
-     * 
+     *
      * @param array $param the parameters passed
-     * 
+     *
      * @return mixed depends on the handle of your response function
      */
     private function validate($type="", $param=array()) {
@@ -256,14 +283,14 @@ class Email {
 
                     foreach ($email_param as $email) {
                         if (!filter_var($email, FILTER_VALIDATE_EMAIL))
-                            return $email . " is not valid";   
+                            return $email . " is not valid";
                     }
                 }
             }
-            
+
             $mail_param[isset($value["id"]) ? $value["id"] : $key] = $param[$key];
         }
-        
+
         if (file_exists($this->template_dir . $type . ".php")) {
             $mail_param["template"] = $this->template_dir . $type . ".php";
 
@@ -274,17 +301,17 @@ class Email {
 
         return $mail_param;
     }
-    
+
     static public function send($param="", $extra=array(), $attachments=array()) {
         $that = static::$instance;
-        
+
         if (empty($param))
             return $that->_response_output("EMAIL_FAIL", "no parameters passed");
-        
+
         $extra = array_merge($extra, $_REQUEST);
-        
+
         $valid = $that->validate($param, $extra);
-        
+
         if (!is_array($valid))
             return $that->_response_output("EMAIL_FAIL", $valid);
 
@@ -298,10 +325,10 @@ class Email {
 
     static public function view($type) {
         $that = static::$instance;
-        
+
         if (empty($type))
             return $that->_response_output("EMAIL_FAIL", "Email view not found");
-        
+
         $param = $that->validate($type, $_REQUEST);
 
         if (!is_array($param))
@@ -309,7 +336,7 @@ class Email {
 
         if (empty($param["template"]))
             return $that->_response_output("NOT_FOUND", "Email template not found");
-        
+
         $param["view_mode"] = true;
 
         ob_start();
@@ -327,7 +354,7 @@ class Email {
             return $template;
         }
 
-        $replacements  = array();    
+        $replacements  = array();
         $language_json = json_decode(get_language_json(visitor_language()));
         $app_settings  = (array) get_app_settings();
 
@@ -335,11 +362,11 @@ class Email {
             foreach($app_settings as $key=>$value){
                 if ($key == "router_paths")
                     continue;
-    
+
                 $replacements[$key] = $value;
             }
         }
-        
+
         foreach ($language_json->texts as $key=>$value) {
             if (is_string($value)) {
                 preg_match_all("/\[%(.+?)%\]/", $value, $matches);
@@ -360,7 +387,7 @@ class Email {
             }
             else {
                 preg_match_all("/\[%(.+?)%\]/", $replacement, $matches);
-    
+
                 for ($i = 0; $i < count($matches[0]); $i++) {
                     $value = str_replace($matches[0][$i], !empty($replacements[$matches[1][$i]]) ? $replacements[$matches[1][$i]] : "", $value);
                 }
@@ -368,7 +395,7 @@ class Email {
 
             $template = preg_replace("#[']*<%" . $key . "%>[']*#", json_encode($replacement), $template);
             $template = preg_replace("#[']*\[%" . $key . "%\][']*#", $replacement, $template);
-        } 
+        }
 
         return $template;
     }
