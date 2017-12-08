@@ -238,9 +238,13 @@ class Email {
             }
         }
 
-        if (!$mail->Send()) {
+        $email_res = $mail->Send();
+        
+        $mail->clearAddresses();
+
+        if (!$email_res) {
             //mail($email_to, $subject, $message, "From: $email_from\r\nReply-To: $email_from\r\nX-Mailer: DT_formmail");
-            //we return false, if mailer failed thats not good...
+            //we return the error, if mailer failed thats not good...
             return $mail->ErrorInfo;
         }
 
