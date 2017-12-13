@@ -166,6 +166,8 @@ class Email {
             return false;
 
         $email_to    = (!defined('APP_ENV') || APP_ENV != "production") ? $this->default_email : $param["email_to"];
+        $email_cc    = !empty($param['email_cc']) ? $param['email_cc'] : '';
+        $email_bcc   = !empty($param['email_bcc']) ? $param['email_bcc']: '';
         $to_name     = !empty($param["to_name"]) ? $param["to_name"] : "";
         $email_from  = !empty($param["email_from"]) ? $param["email_from"] : $this->default_email;
         $email_reply = !empty($param["email_reply"]) ? $param["email_reply"] : $email_from;
@@ -216,10 +218,23 @@ class Email {
             }
         }
 
-        $email_to_param = explode(",", $email_to);
-        foreach ($email_to_param as $email) {
-            $mail->AddAddress($email, $to_name);
-        }
+        array_map(function($email_address) use ($mail) {
+            if (!empty(trim($email_address))) {
+                $mail->AddAddress(trim($email_address));
+            }
+        }, explode(",", $email_to));
+
+        array_map(function($email_address) use ($mail) {
+            if (!empty(trim($email_address))) {
+                $mail->addCC($email_address);
+            }
+        }, explode(',', $email_cc));
+
+        array_map(function($email_address) use ($mail) {
+            if (!empty(trim($email_address))) {
+                $mail->addBCC(trim($email_address));
+            }
+        }, explode(',', $email_bcc));
 
         $mail->From = $email_from;
         $mail->FromName = $from_name_encoded;
