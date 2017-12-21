@@ -322,12 +322,13 @@ class Email {
     }
 
     static public function send($param="", $extra=array(), $attachments=array()) {
-        $that = static::$instance;
-
+        $that    = static::$instance;
+        $request = !empty($_REQUEST) ? $_REQUEST : array();
+        
         if (empty($param))
             return $that->_response_output("EMAIL_FAIL", "no parameters passed");
 
-        $extra = array_merge($extra, $_REQUEST);
+        $extra = array_merge($extra, $request);
 
         $valid = $that->validate($param, $extra);
 
@@ -343,12 +344,13 @@ class Email {
     }
 
     static public function view($type) {
-        $that = static::$instance;
+        $that    = static::$instance;
+        $request = !empty($_REQUEST) ? $_REQUEST : array();
 
         if (empty($type))
             return $that->_response_output("EMAIL_FAIL", "Email view not found");
 
-        $param = $that->validate($type, $_REQUEST);
+        $param = $that->validate($type, $request);
 
         if (!is_array($param))
             return $that->_response_output("NOT_FOUND", $param);
