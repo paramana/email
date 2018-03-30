@@ -262,6 +262,7 @@ class Email {
         if (!$email_res) {
             //mail($email_to, $subject, $message, "From: $email_from\r\nReply-To: $email_from\r\nX-Mailer: DT_formmail");
             //we return the error, if mailer failed thats not good...
+            error_log("Email not send: " . $mail->ErrorInfo);
             return $mail->ErrorInfo;
         }
 
