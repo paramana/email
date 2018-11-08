@@ -2,7 +2,7 @@
 require __DIR__ . '/../vendor/autoload.php';
 require "messages.php";
 require "config.php";
-require "email.class.php";
+require "../email.class.php";
 
 $mail_maps = [
     "contact" => [
