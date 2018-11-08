@@ -19,12 +19,12 @@ class Email {
     /*
      * The mapping of mailing types and fields
      */
-    private $mail_maps = array();
+    private $mail_maps = [];
 
     /*
      * The mapping of smtp confugiration
      */
-    private $smtp_config_map = array();
+    private $smtp_config_map = [];
 
     /*
      * The default name
@@ -130,11 +130,11 @@ class Email {
      *
      * @param array $mail_maps
      */
-    public function set_mail_maps($mail_maps = array()) {
+    public function set_mail_maps($mail_maps = []) {
         $this->mail_maps = $mail_maps;
     }
 
-    public function set_smtp_config_map($smtp_config_map = array()) {
+    public function set_smtp_config_map($smtp_config_map = []) {
         if (empty($smtp_config_map))
             return;
 
@@ -142,7 +142,7 @@ class Email {
         $this->smtp_config_map = $smtp_config_map;
     }
 
-    private function _response_output($status="SUCCESS", $message="", $opt=array()){
+    private function _response_output($status="SUCCESS", $message="", $opt=[]){
         if (!$this->print_output) {
             if ($status != "SUCCESS")
                 return array("status"=>$status, "message"=>$message);
@@ -160,6 +160,7 @@ class Email {
      * @param array $attachments
      *
      * @return boolean true on success
+     * @throws phpmailerException
      */
     private function _send_email($param, $attachments) {
         if (!isset($param["email_to"]))
@@ -386,7 +387,7 @@ class Email {
             return $template;
         }
 
-        $replacements  = array();
+        $replacements  = [];
         $language_json = json_decode(get_language_json(visitor_language()));
         $app_settings  = (array) get_app_settings();
 
@@ -432,4 +433,4 @@ class Email {
         return $template;
     }
 }
-?>
+
