@@ -4,6 +4,7 @@
 	"type": "library",
 	"license": "",
 	"require": {
+		"ext-json": "*",
 		"phpmailer/phpmailer": "^5.2"
 	},
 	"autoload": {
