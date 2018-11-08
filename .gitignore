@@ -21,3 +21,10 @@ nbproject
 
 # Composer packages
 **/vendor
+
+#IDES
+.vscode
+.idea
+.tern-project
+codekit-config.json
+*.code-workspace
