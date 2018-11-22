@@ -388,7 +388,7 @@ class Email {
         }
 
         $replacements  = [];
-        $language_json = json_decode(get_language_json(visitor_language(), "-email"));
+        $language_json = json_decode(array_merge(get_language_json(visitor_language()), get_language_json(visitor_language(), "-email")));
         $app_settings  = (array) get_app_settings();
 
         if ($app_settings) {
