@@ -388,7 +388,13 @@ class Email {
         }
 
         $replacements  = [];
-        $language_json = json_decode(array_merge(get_language_json(visitor_language()), get_language_json(visitor_language(), "-email")));
+        $language_json = json_decode(get_language_json(visitor_language()), true);
+        $email_langs = json_decode(get_language_json(visitor_language(), '-email'), true);
+
+        foreach($email_langs['texts'] as $key => $value) {
+            $language_json['texts'][$key] = $value;
+        }
+
         $app_settings  = (array) get_app_settings();
 
         if ($app_settings) {
@@ -400,11 +406,11 @@ class Email {
             }
         }
 
-        foreach ($language_json->texts as $key=>$value) {
+        foreach ($language_json['texts'] as $key=>$value) {
             if (is_string($value)) {
                 preg_match_all("/\[%(.+?)%\]/", $value, $matches);
 
-                for ($i = 0; $i < count($matches[0]); $i++) {
+                for ($i = 0, $iMax = count($matches[0]); $i < $iMax; $i++) {
                     $value = str_replace($matches[0][$i], !empty($replacements[$matches[1][$i]]) ? $replacements[$matches[1][$i]] : "", $value);
                 }
             }
@@ -421,7 +427,7 @@ class Email {
             else {
                 preg_match_all("/\[%(.+?)%\]/", $replacement, $matches);
 
-                for ($i = 0; $i < count($matches[0]); $i++) {
+                for ($i = 0, $iMax = count($matches[0]); $i < $iMax; $i++) {
                     $value = str_replace($matches[0][$i], !empty($replacements[$matches[1][$i]]) ? $replacements[$matches[1][$i]] : "", $value);
                 }
             }
