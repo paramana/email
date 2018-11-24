@@ -186,7 +186,7 @@ class Email {
             $message = ob_get_contents();
             ob_end_clean();
 
-            $message = $this->_parse_templates($message);
+            $message = $this->_parse_template($message);
 
             if (empty($param["html_template"]))
                 $html_message = preg_replace('/\\n/', '<br/>', $message);
@@ -377,60 +377,16 @@ class Email {
         $message = ob_get_contents();
         ob_end_clean();
 
-        $message = $that->_parse_templates($message);
+        $message = $that->_parse_template($message);
 
         return $that->_response_output("SUCCESS", $message, array("content_type"=>"html"));
     }
 
-    private function _parse_templates($template){
-        if (!(function_exists('get_language_json') && function_exists('visitor_language') && function_exists('get_app_settings'))) {
+    private function _parse_template($template){
+        if (!function_exists('parse_email_template')) {
             return $template;
         }
 
-        $replacements  = [];
-        $language_json = json_decode(array_merge(get_language_json(visitor_language()), get_language_json(visitor_language(), "-email")));
-        $app_settings  = (array) get_app_settings();
-
-        if ($app_settings) {
-            foreach($app_settings as $key=>$value){
-                if ($key == "router_paths")
-                    continue;
-
-                $replacements[$key] = $value;
-            }
-        }
-
-        foreach ($language_json->texts as $key=>$value) {
-            if (is_string($value)) {
-                preg_match_all("/\[%(.+?)%\]/", $value, $matches);
-
-                for ($i = 0; $i < count($matches[0]); $i++) {
-                    $value = str_replace($matches[0][$i], !empty($replacements[$matches[1][$i]]) ? $replacements[$matches[1][$i]] : "", $value);
-                }
-            }
-
-            $replacements[$key] = $value;
-        }
-
-        foreach($replacements as $key=>$value) {
-            $replacement = isset($value) ? $value : "";
-
-            if (!is_string($replacement)) {
-                $replacement = json_encode($replacement);
-            }
-            else {
-                preg_match_all("/\[%(.+?)%\]/", $replacement, $matches);
-
-                for ($i = 0; $i < count($matches[0]); $i++) {
-                    $value = str_replace($matches[0][$i], !empty($replacements[$matches[1][$i]]) ? $replacements[$matches[1][$i]] : "", $value);
-                }
-            }
-
-            $template = preg_replace("#[']*<%" . $key . "%>[']*#", json_encode($replacement), $template);
-            $template = preg_replace("#[']*\[%" . $key . "%\][']*#", $replacement, $template);
-        }
-
-        return $template;
+        return parse_email_template($template);
     }
 }
-
