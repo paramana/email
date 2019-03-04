@@ -3,7 +3,7 @@
  * A class for sending email with phpmailer
  *
  * Started: 02-02-2013
- * Updated: 05-10-2016
+ * Updated: 04-03-2019
  * @author Giannis Panagiotou <bone.jp@gmail.com>
  * @version 1.0
  * @source https://github.com/giannis/email
@@ -286,6 +286,10 @@ class Email {
         $mail_param = array();
 
         foreach ($config_map as $key => $value) {
+            if (!empty($value["id"]) && $key != $value["id"]) {
+                $param[$key] = $param[$value["id"]];
+            }
+
             if (!empty($value["value"]))
                 $param[$key] = $value["value"];
 
@@ -315,7 +319,7 @@ class Email {
                 }
             }
 
-            $mail_param[isset($value["id"]) ? $value["id"] : $key] = $param[$key];
+            $mail_param[$key] = $param[$key];
         }
 
         if (file_exists($this->template_dir . $type . ".php")) {
