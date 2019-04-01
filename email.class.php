@@ -1,13 +1,6 @@
 <?php
 /**
- * A class for sending email with phpmailer
- *
- * Started: 02-02-2013
- * Updated: 04-03-2019
- * @author Giannis Panagiotou <bone.jp@gmail.com>
- * @version 1.0
- * @source https://github.com/giannis/email
- * @package phpmailer
+ * A class for sending email with PHPMailer
  */
 class Email {
 
@@ -22,7 +15,7 @@ class Email {
     private $mail_maps = [];
 
     /*
-     * The mapping of smtp confugiration
+     * The mapping of SMTP configuration
      */
     private $smtp_config_map = [];
 
@@ -55,10 +48,9 @@ class Email {
     private $smtp_password;
 
     final private function __construct() {
-        // if called twice ....
-        if (isset(static::$instance))
-        // throws an Exception
+        if (isset(static::$instance)) {
             throw new Exception("An instance of " . get_called_class() . " already exists.");
+        }
 
         if (defined("EMAIL_DEBUG") && EMAIL_DEBUG == true) {
             $this->debug = 3;
@@ -81,20 +73,20 @@ class Email {
             if (file_exists(MAIL_SMTP_CONFIG)) {
                 require_once(MAIL_SMTP_CONFIG);
 
-                $this->smtp_auth     = $smtp_auth;
-                $this->smtp_secure   = $smtp_secure;
-                $this->smtp_host     = $smtp_host;
-                $this->smtp_port     = $smtp_port;
+                $this->smtp_auth = $smtp_auth;
+                $this->smtp_secure = $smtp_secure;
+                $this->smtp_host = $smtp_host;
+                $this->smtp_port = $smtp_port;
                 $this->smtp_username = $smtp_username;
                 $this->smtp_password = $smtp_password;
             }
         }
         else if (defined("SMTP_ENABLED") && !empty(SMTP_ENABLED) && defined("SMTP_USERNAME")) {
-            $this->use_smtp      = true;
-            $this->smtp_auth     = SMTP_AUTH;
-            $this->smtp_secure   = SMTP_SECURE;
-            $this->smtp_host     = SMTP_HOST;
-            $this->smtp_port     = SMTP_PORT;
+            $this->use_smtp = true;
+            $this->smtp_auth = SMTP_AUTH;
+            $this->smtp_secure = SMTP_SECURE;
+            $this->smtp_host = SMTP_HOST;
+            $this->smtp_port = SMTP_PORT;
             $this->smtp_username = SMTP_USERNAME;
             $this->smtp_password = SMTP_PASSWORD;
         }
@@ -145,7 +137,7 @@ class Email {
     private function _response_output($status="SUCCESS", $message="", $opt=[]){
         if (!$this->print_output) {
             if ($status != "SUCCESS")
-                return array("status"=>$status, "message"=>$message);
+                return ["status" => $status, "message" => $message];
 
             return $message;
         }
@@ -166,17 +158,17 @@ class Email {
         if (!isset($param["email_to"]))
             return false;
 
-        $email_to    = (!defined('APP_ENV') || APP_ENV != "production") ? $this->default_email : $param["email_to"];
-        $email_cc    = !empty($param['email_cc']) ? $param['email_cc'] : '';
-        $email_bcc   = !empty($param['email_bcc']) ? $param['email_bcc']: '';
-        $email_from  = !empty($param["email_from"]) ? $param["email_from"] : $this->default_email;
+        $email_to = (!defined('APP_ENV') || APP_ENV != "production") ? $this->default_email : $param["email_to"];
+        $email_cc = !empty($param['email_cc']) ? $param['email_cc'] : '';
+        $email_bcc = !empty($param['email_bcc']) ? $param['email_bcc']: '';
+        $email_from = !empty($param["email_from"]) ? $param["email_from"] : $this->default_email;
         $email_reply = !empty($param["email_reply"]) ? $param["email_reply"] : $email_from;
-        $from_name   = !empty($param["from_name"]) ? $param["from_name"] : $this->default_name;
-        $subject     = !empty($param["subject"]) ? ("=?UTF-8?B?" . base64_encode($param["subject"]) . "?=") : "";
-        $message     = !empty($param["message"]) ? $param["message"] : "";
-        $smtp_account_id     = !empty($param["email_account_id"]) ? $param["email_account_id"] : $email_from;
-        $from_name_encoded   = "=?UTF-8?B?" . base64_encode($from_name) . "?=";
-        $from_reply_name     = !empty($param["from_reply_name"]) ? $param["from_reply_name"] : $from_name;
+        $from_name = !empty($param["from_name"]) ? $param["from_name"] : $this->default_name;
+        $subject = !empty($param["subject"]) ? ("=?UTF-8?B?" . base64_encode($param["subject"]) . "?=") : "";
+        $message = !empty($param["message"]) ? $param["message"] : "";
+        $smtp_account_id = !empty($param["email_account_id"]) ? $param["email_account_id"] : $email_from;
+        $from_name_encoded = "=?UTF-8?B?" . base64_encode($from_name) . "?=";
+        $from_reply_name = !empty($param["from_reply_name"]) ? $param["from_reply_name"] : $from_name;
         $from_reply_name_enc = "=?UTF-8?B?" . base64_encode($from_reply_name) . "?=";
         $html_message = $message;
 
@@ -203,21 +195,21 @@ class Email {
                 $config_map = $this->smtp_config_map[$smtp_account_id];
 
                 $mail->isSMTP();
-                $mail->SMTPAuth   = $config_map["auth"];
+                $mail->SMTPAuth = $config_map["auth"];
                 $mail->SMTPSecure = $config_map["secure"];
-                $mail->Host       = $config_map["host"];
-                $mail->Port       = $config_map["port"];
-                $mail->Username   = $config_map["username"];
-                $mail->Password   = $config_map["password"];
+                $mail->Host = $config_map["host"];
+                $mail->Port = $config_map["port"];
+                $mail->Username = $config_map["username"];
+                $mail->Password = $config_map["password"];
             }
             else if (isset($this->smtp_username) && $email_from == $this->smtp_username) {
                 $mail->isSMTP();
-                $mail->SMTPAuth   = $this->smtp_auth;
+                $mail->SMTPAuth = $this->smtp_auth;
                 $mail->SMTPSecure = $this->smtp_secure;
-                $mail->Host       = $this->smtp_host;
-                $mail->Port       = $this->smtp_port;
-                $mail->Username   = $this->smtp_username;
-                $mail->Password   = $this->smtp_password;
+                $mail->Host = $this->smtp_host;
+                $mail->Port = $this->smtp_port;
+                $mail->Username = $this->smtp_username;
+                $mail->Password = $this->smtp_password;
             }
         }
 
@@ -271,19 +263,18 @@ class Email {
     }
 
     /*
-     * Checks the email parameters based on the list of options
-     * from the mail_maps
+     * Checks the email parameters based on the list of options * from the mail_maps
      *
      * @param array $param the parameters passed
      *
      * @return mixed depends on the handle of your response function
      */
-    private function validate($type="", $param=array()) {
+    private function validate($type="", array $param=[]) {
         if (!array_key_exists($type, $this->mail_maps) || empty($this->mail_maps[$type]))
             return "No email map found";
 
         $config_map = $this->mail_maps[$type];
-        $mail_param = array();
+        $mail_param = [];
 
         foreach ($config_map as $key => $value) {
             if (!empty($value["id"]) && $key != $value["id"]) {
@@ -337,9 +328,9 @@ class Email {
         return $mail_param;
     }
 
-    static public function send($param="", $extra=array(), $attachments=array()) {
-        $that    = static::$instance;
-        $request = !empty($_REQUEST) ? $_REQUEST : array();
+    static public function send($param="", $extra=[], $attachments=[]) {
+        $that = static::$instance;
+        $request = !empty($_REQUEST) ? $_REQUEST : [];
 
         if (empty($param))
             return $that->_response_output("EMAIL_FAIL", "no parameters passed");
@@ -359,9 +350,9 @@ class Email {
         return $that->_response_output("SUCCESS", "email send");
     }
 
-    static public function view($type) {
-        $that    = static::$instance;
-        $request = !empty($_REQUEST) ? $_REQUEST : array();
+    public static function view($type) {
+        $that = static::$instance;
+        $request = !empty($_REQUEST) ? $_REQUEST : [];
 
         if (empty($type))
             return $that->_response_output("EMAIL_FAIL", "Email view not found");
@@ -383,7 +374,7 @@ class Email {
 
         $message = $that->_parse_template($message);
 
-        return $that->_response_output("SUCCESS", $message, array("content_type"=>"html"));
+        return $that->_response_output("SUCCESS", $message, ["content_type" => "html"]);
     }
 
     private function _parse_template($template){
