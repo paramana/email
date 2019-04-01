@@ -186,24 +186,33 @@ class Email {
                 $html_message = $message;
         }
 
+        if (isset($param["plaintext_template"])) {
+            ob_start();
+            require $param["plaintext_template"];
+            $message = ob_get_contents();
+            ob_end_clean();
+
+            $message = $this->_parse_template($message);
+
+            $plaintext_message = $message;
+        }
+
         $mail = new PHPMailer();
 
         if ($this->use_smtp) {
             $mail->SMTPDebug = $this->debug;
+            $mail->isSMTP();
 
             if ($this->smtp_config_map && !empty($this->smtp_config_map[$smtp_account_id])) {
                 $config_map = $this->smtp_config_map[$smtp_account_id];
 
-                $mail->isSMTP();
                 $mail->SMTPAuth = $config_map["auth"];
                 $mail->SMTPSecure = $config_map["secure"];
                 $mail->Host = $config_map["host"];
                 $mail->Port = $config_map["port"];
                 $mail->Username = $config_map["username"];
                 $mail->Password = $config_map["password"];
-            }
-            else if (isset($this->smtp_username) && $email_from == $this->smtp_username) {
-                $mail->isSMTP();
+            } else if (isset($this->smtp_username) && $email_from == $this->smtp_username) {
                 $mail->SMTPAuth = $this->smtp_auth;
                 $mail->SMTPSecure = $this->smtp_secure;
                 $mail->Host = $this->smtp_host;
@@ -231,16 +240,16 @@ class Email {
             }
         }, explode(',', $email_bcc));
 
-        $mail->From = $email_from;
-        $mail->FromName = $from_name_encoded;
-        $mail->AddReplyTo($email_reply, $from_reply_name_enc);
         $mail->SetFrom($email_from, $from_name_encoded);
-        $mail->Subject = $subject;
-        $mail->AltBody = $message;
-        //NOTE: After updating on php.mailer > 6 check if this is still necessary
-        $html_message = preg_replace('/\s+/', ' ', $html_message);
-        $mail->MsgHTML($html_message);
+        $mail->AddReplyTo($email_reply, $from_reply_name_enc);
+
         $mail->CharSet = 'UTF-8';
+        $mail->Subject = $subject;
+        //NOTE: After updating to  PHPMailer > 6 check if this is still necessary
+        $html_message = preg_replace('/\s+/', ' ', $html_message);
+        // This automatically sets Body and AltBody, that's why we override the plaintext message next
+        $mail->MsgHTML($html_message);
+        $mail->AltBody = $plaintext_message;
 
         if (!empty($attachments)) {
             foreach($attachments as $attachment) {
@@ -253,8 +262,8 @@ class Email {
         $mail->clearAddresses();
 
         if (!$email_res) {
-            //mail($email_to, $subject, $message, "From: $email_from\r\nReply-To: $email_from\r\nX-Mailer: DT_formmail");
-            //we return the error, if mailer failed thats not good...
+            // mail($email_to, $subject, $message, "From: $email_from\r\nReply-To: $email_from\r\nX-Mailer: DT_formmail");
+            // we return the error, if mailer failed that's not good...
             error_log("Email not send: " . $mail->ErrorInfo);
             return $mail->ErrorInfo;
         }
@@ -325,10 +334,18 @@ class Email {
             }
         }
 
+        if (file_exists($this->template_dir . $type . ".txt")) {
+            $mail_param["plaintext_template"] = $this->template_dir . $type . ".txt";
+
+            if (!empty($config_map["plaintext_template"])) {
+                $mail_param["plaintext_template"] = true;
+            }
+        }
+
         return $mail_param;
     }
 
-    static public function send($param="", $extra=[], $attachments=[]) {
+    public static function send($param="", $extra=[], $attachments=[]) {
         $that = static::$instance;
         $request = !empty($_REQUEST) ? $_REQUEST : [];
 
