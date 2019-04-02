@@ -322,8 +322,8 @@ class Email {
             $mail_param[$key] = $param[$key];
         }
 
-        if (file_exists($this->template_dir . $type . ".php")) {
-            $mail_param["template"] = $this->template_dir . $type . ".php";
+        if (file_exists($this->template_dir . $type . ".html.php")) {
+            $mail_param["template"] = $this->template_dir . $type . ".html.php";
 
             if (!empty($config_map["html_template"])) {
                 $mail_param["html_template"] = true;
@@ -334,8 +334,8 @@ class Email {
             }
         }
 
-        if (file_exists($this->template_dir . $type . ".txt")) {
-            $mail_param["template_plaintext"] = $this->template_dir . $type . ".txt";
+        if (file_exists($this->template_dir . $type . ".txt.php")) {
+            $mail_param["template_plaintext"] = $this->template_dir . $type . ".txt.php";
 
             if (!empty($config_map["plaintext_template"])) {
                 $mail_param["plaintext_template"] = true;
