@@ -249,7 +249,9 @@ class Email {
         $html_message = preg_replace('/\s+/', ' ', $html_message);
         // This automatically sets Body and AltBody, that's why we override the plaintext message next
         $mail->MsgHTML($html_message);
-        $mail->AltBody = $plaintext_message;
+        if (isset($plaintext_message)) {
+            $mail->AltBody = $plaintext_message;
+        }
 
         if (!empty($attachments)) {
             foreach($attachments as $attachment) {
