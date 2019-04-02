@@ -186,9 +186,9 @@ class Email {
                 $html_message = $message;
         }
 
-        if (isset($param["plaintext_template"])) {
+        if (isset($param["template_plaintext"])) {
             ob_start();
-            require $param["plaintext_template"];
+            require $param["template_plaintext"];
             $message = ob_get_contents();
             ob_end_clean();
 
@@ -335,7 +335,7 @@ class Email {
         }
 
         if (file_exists($this->template_dir . $type . ".txt")) {
-            $mail_param["plaintext_template"] = $this->template_dir . $type . ".txt";
+            $mail_param["template_plaintext"] = $this->template_dir . $type . ".txt";
 
             if (!empty($config_map["plaintext_template"])) {
                 $mail_param["plaintext_template"] = true;
@@ -384,6 +384,7 @@ class Email {
 
         $param["view_mode"] = true;
 
+        // Process accept headers
         ob_start();
         require $param["template"];
         $message = ob_get_contents();
