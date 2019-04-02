@@ -66,7 +66,7 @@ class Email
             $this->default_email = EMAIL_DEFAULT_ADDRESS;
         }
 
-        $this->template_dir = define("EMAIL_TEMPLATES_DIR") ? EMAIL_TEMPLATES_DIR : __DIR__ . "/templates/";
+        $this->template_dir = defined("EMAIL_TEMPLATES_DIR") ? EMAIL_TEMPLATES_DIR : __DIR__ . "/templates/";
 
         if (defined("MAIL_SMTP_CONFIG") && !empty(MAIL_SMTP_CONFIG)) {
             $this->use_smtp = true;
