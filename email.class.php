@@ -384,15 +384,23 @@ class Email {
 
         $param["view_mode"] = true;
 
-        // Process accept headers
+        $headers = apache_request_headers();
+        $accepts = $headers['Accept'] ?? 'text/html';
+
         ob_start();
-        require $param["template"];
+        if ($accepts == 'text/html') {
+            require $param["template"];
+            $contentType = "html";
+        } else {
+            require $param["template_plaintext"];
+            $contentType = "text";
+        }
         $message = ob_get_contents();
         ob_end_clean();
 
         $message = $that->_parse_template($message);
 
-        return $that->_response_output("SUCCESS", $message, ["content_type" => "html"]);
+        return $that->_response_output("SUCCESS", $message, ["content_type" => $contentType]);
     }
 
     private function _parse_template($template){
