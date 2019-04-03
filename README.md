@@ -1,9 +1,8 @@
-php email
+PHP email
 ===
 
-A simple php email class
-It validates email parameters based on a set of rules
-and sends it with phpmailer
+A simple PHP email class that validates email parameters based on a set of rules
+and sends it with PHPMailer
 
 Use it like:
 
@@ -12,32 +11,32 @@ require "messages.php";
 require "config.php";
 require "class.email.php";
 
-$mail_maps = array(
-  "contact"=>array(
-    "subject"=>array("id"=>"subject", "default"=>"People Contacting"),
-    "email_to"=>array("id"=>"email_to", "default"=>"me@domain.com"),
-    "name"=>array("id"=>"from_name", "strip"=>true, "required"=>true),
-    "email"=>array("id"=>"email_from", "strip"=>true, "default"=>'me@domain.com', "validate"=>"email"),
-    "message"=>array("id"=>"message", "strip"=>true)
-  )
-);
+$mail_maps = [
+    "contact" => [
+        "subject" => [ "id" => "subject", "default" => "People Contacting" ],
+        "email_to" => [ "id" => "email_to", "default" => "me@domain.com" ],
+        "name" => [ "id" => "from_name", "strip" => true, "required" => true ],
+        "email" => [ "id" => "email_from", "strip" => true, "default" => 'me@domain.com', "validate" => "email" ],
+        "message" => [ "id" => "message", "strip" => true ]
+    ]
+];
 
 $Email = Email::i();
 $Email->set_mail_maps($mail_maps);
 
-$Email->execute(array(
-  "cmd"=>"contact", 
-  "type"=>"contact", 
-  "subject"=>"hey mate", 
-  "name"=>"me", 
-  "email"=>"someone@anyone.com",
-  "message"=>"how are you?"
-));
+$Email->execute([
+    "cmd" => "contact",
+    "type" => "contact",
+    "subject" => "hey mate",
+    "name" => "me",
+    "email" => "someone@anyone.com",
+    "message" => "how are you?"
+]);
 ```
 
-You can pass the smtp configuration as a array like
+You can pass the SMTP configuration as an array with a similar structure to
 
-```
+```txt
 array(2) {
   ["email@platform"]=>
   array(6) {
