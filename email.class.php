@@ -2,7 +2,8 @@
 /**
  * A class for sending email with PHPMailer
  */
-class Email {
+class Email
+{
 
     /**
      * if not present, nothing will be executed - Fatal error
@@ -47,7 +48,8 @@ class Email {
     private $smtp_username;
     private $smtp_password;
 
-    final private function __construct() {
+    final private function __construct()
+    {
         if (isset(static::$instance)) {
             throw new Exception("An instance of " . get_called_class() . " already exists.");
         }
@@ -56,16 +58,15 @@ class Email {
             $this->debug = 3;
         }
 
-        if (defined("EMAIL_DEFAULT_NAME"))
+        if (defined("EMAIL_DEFAULT_NAME")) {
             $this->default_name = EMAIL_DEFAULT_NAME;
+        }
 
-        if (defined("EMAIL_DEFAULT_ADDRESS"))
+        if (defined("EMAIL_DEFAULT_ADDRESS")) {
             $this->default_email = EMAIL_DEFAULT_ADDRESS;
+        }
 
-        if (defined("EMAIL_TEMPLATES_DIR"))
-            $this->template_dir = EMAIL_TEMPLATES_DIR;
-        else
-            $this->template_dir = __DIR__ . "/templates/";
+        $this->template_dir = defined("EMAIL_TEMPLATES_DIR") ? EMAIL_TEMPLATES_DIR : __DIR__ . "/templates/";
 
         if (defined("MAIL_SMTP_CONFIG") && !empty(MAIL_SMTP_CONFIG)) {
             $this->use_smtp = true;
@@ -80,8 +81,7 @@ class Email {
                 $this->smtp_username = $smtp_username;
                 $this->smtp_password = $smtp_password;
             }
-        }
-        else if (defined("SMTP_ENABLED") && !empty(SMTP_ENABLED) && defined("SMTP_USERNAME")) {
+        } else if (defined("SMTP_ENABLED") && !empty(SMTP_ENABLED) && defined("SMTP_USERNAME")) {
             $this->use_smtp = true;
             $this->smtp_auth = SMTP_AUTH;
             $this->smtp_secure = SMTP_SECURE;
@@ -96,14 +96,16 @@ class Email {
      * No clone allowed,
      * both internally and externally
      */
-    final private function __clone() {
+    final private function __clone()
+    {
         throw new Exception("An instance of " . get_called_class() . " cannot be cloned.");
     }
 
     /**
      * the common sense method to retrieve the instance
      */
-    final public static function i() {
+    final public static function i()
+    {
         return isset(static::$instance) ? static::$instance : static::$instance = new static;
     }
 
@@ -112,7 +114,8 @@ class Email {
      *
      * @return bool true
      */
-    function __destruct() {
+    function __destruct()
+    {
         return true;
     }
 
@@ -122,22 +125,27 @@ class Email {
      *
      * @param array $mail_maps
      */
-    public function set_mail_maps($mail_maps = []) {
+    public function set_mail_maps($mail_maps = [])
+    {
         $this->mail_maps = $mail_maps;
     }
 
-    public function set_smtp_config_map($smtp_config_map = []) {
-        if (empty($smtp_config_map))
+    public function set_smtp_config_map($smtp_config_map = [])
+    {
+        if (empty($smtp_config_map)) {
             return;
+        }
 
         $this->use_smtp = true;
         $this->smtp_config_map = $smtp_config_map;
     }
 
-    private function _response_output($status="SUCCESS", $message="", $opt=[]){
+    private function _response_output($status = "SUCCESS", $message = "", $opt = [])
+    {
         if (!$this->print_output) {
-            if ($status != "SUCCESS")
+            if ($status != "SUCCESS") {
                 return ["status" => $status, "message" => $message];
+            }
 
             return $message;
         }
@@ -154,9 +162,11 @@ class Email {
      * @return boolean true on success
      * @throws phpmailerException
      */
-    private function _send_email($param, $attachments) {
-        if (!isset($param["email_to"]))
+    private function _send_email($param, $attachments)
+    {
+        if (!isset($param["email_to"])) {
             return false;
+        }
 
         $email_to = (!defined('APP_ENV') || APP_ENV != "production") ? $this->default_email : $param["email_to"];
         $email_cc = !empty($param['email_cc']) ? $param['email_cc'] : '';
@@ -179,31 +189,36 @@ class Email {
             ob_end_clean();
 
             $message = $this->_parse_template($message);
+            $html_message = empty($param["html_template"]) ? preg_replace('/\\n/', '<br/>', $message) : $message;
+        }
 
-            if (empty($param["html_template"]))
-                $html_message = preg_replace('/\\n/', '<br/>', $message);
-            else
-                $html_message = $message;
+        if (isset($param["template_plaintext"])) {
+            ob_start();
+            require $param["template_plaintext"];
+            $message = ob_get_contents();
+            ob_end_clean();
+
+            $message = $this->_parse_template($message);
+
+            $plaintext_message = strip_tags($message);
         }
 
         $mail = new PHPMailer();
 
         if ($this->use_smtp) {
             $mail->SMTPDebug = $this->debug;
+            $mail->isSMTP();
 
             if ($this->smtp_config_map && !empty($this->smtp_config_map[$smtp_account_id])) {
                 $config_map = $this->smtp_config_map[$smtp_account_id];
 
-                $mail->isSMTP();
                 $mail->SMTPAuth = $config_map["auth"];
                 $mail->SMTPSecure = $config_map["secure"];
                 $mail->Host = $config_map["host"];
                 $mail->Port = $config_map["port"];
                 $mail->Username = $config_map["username"];
                 $mail->Password = $config_map["password"];
-            }
-            else if (isset($this->smtp_username) && $email_from == $this->smtp_username) {
-                $mail->isSMTP();
+            } else if (isset($this->smtp_username) && $email_from == $this->smtp_username) {
                 $mail->SMTPAuth = $this->smtp_auth;
                 $mail->SMTPSecure = $this->smtp_secure;
                 $mail->Host = $this->smtp_host;
@@ -213,37 +228,39 @@ class Email {
             }
         }
 
-        array_map(function($email_address) use ($mail) {
+        array_map(function ($email_address) use ($mail) {
             if (!empty(trim($email_address))) {
                 $mail->AddAddress(trim($email_address));
             }
         }, explode(",", $email_to));
 
-        array_map(function($email_address) use ($mail) {
+        array_map(function ($email_address) use ($mail) {
             if (!empty(trim($email_address))) {
                 $mail->addCC($email_address);
             }
         }, explode(',', $email_cc));
 
-        array_map(function($email_address) use ($mail) {
+        array_map(function ($email_address) use ($mail) {
             if (!empty(trim($email_address))) {
                 $mail->addBCC(trim($email_address));
             }
         }, explode(',', $email_bcc));
 
-        $mail->From = $email_from;
-        $mail->FromName = $from_name_encoded;
-        $mail->AddReplyTo($email_reply, $from_reply_name_enc);
         $mail->SetFrom($email_from, $from_name_encoded);
-        $mail->Subject = $subject;
-        $mail->AltBody = $message;
-        //NOTE: After updating on php.mailer > 6 check if this is still necessary
-        $html_message = preg_replace('/\s+/', ' ', $html_message);
-        $mail->MsgHTML($html_message);
+        $mail->AddReplyTo($email_reply, $from_reply_name_enc);
+
         $mail->CharSet = 'UTF-8';
+        $mail->Subject = $subject;
+        // NOTE: After updating to  PHPMailer > 6 check if this is still necessary
+        $html_message = preg_replace('/\s+/', ' ', $html_message);
+        // This automatically sets Body and AltBody, that's why we override the plaintext message next
+        $mail->MsgHTML($html_message);
+        if (isset($plaintext_message)) {
+            $mail->AltBody = $plaintext_message;
+        }
 
         if (!empty($attachments)) {
-            foreach($attachments as $attachment) {
+            foreach ($attachments as $attachment) {
                 $mail->AddAttachment($attachment["path"], $attachment["name"]);
             }
         }
@@ -253,8 +270,8 @@ class Email {
         $mail->clearAddresses();
 
         if (!$email_res) {
-            //mail($email_to, $subject, $message, "From: $email_from\r\nReply-To: $email_from\r\nX-Mailer: DT_formmail");
-            //we return the error, if mailer failed thats not good...
+            // mail($email_to, $subject, $message, "From: $email_from\r\nReply-To: $email_from\r\nX-Mailer: DT_formmail");
+            // we return the error, if mailer failed that's not good...
             error_log("Email not send: " . $mail->ErrorInfo);
             return $mail->ErrorInfo;
         }
@@ -269,9 +286,11 @@ class Email {
      *
      * @return mixed depends on the handle of your response function
      */
-    private function validate($type="", array $param=[]) {
-        if (!array_key_exists($type, $this->mail_maps) || empty($this->mail_maps[$type]))
+    private function validate($type = "", array $param = [])
+    {
+        if (!array_key_exists($type, $this->mail_maps) || empty($this->mail_maps[$type])) {
             return "No email map found";
+        }
 
         $config_map = $this->mail_maps[$type];
         $mail_param = [];
@@ -281,12 +300,14 @@ class Email {
                 $param[$key] = $param[$value["id"]];
             }
 
-            if (!empty($value["value"]))
+            if (!empty($value["value"])) {
                 $param[$key] = $value["value"];
+            }
 
             if (empty($param[$key]) || strlen(trim($param[$key])) <= 0) {
-                if (!empty($value["required"]))
+                if (!empty($value["required"])) {
                     return $key . " is required";
+                }
 
                 if (!isset($value["default"])) {
                     $param[$key] = "";
@@ -296,16 +317,18 @@ class Email {
                 $param[$key] = $value["default"];
             }
 
-            if (!empty($value["strip"]))
+            if (!empty($value["strip"])) {
                 $param[$key] = stripslashes(strip_tags($param[$key]));
+            }
 
             if (!empty($value["validate"])) {
                 if ($value["validate"] == "email") {
                     $email_param = explode(",", $param[$key]);
 
                     foreach ($email_param as $email) {
-                        if (!filter_var($email, FILTER_VALIDATE_EMAIL))
+                        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                             return $email . " is not valid";
+                        }
                     }
                 }
             }
@@ -313,8 +336,8 @@ class Email {
             $mail_param[$key] = $param[$key];
         }
 
-        if (file_exists($this->template_dir . $type . ".php")) {
-            $mail_param["template"] = $this->template_dir . $type . ".php";
+        if (file_exists($this->template_dir . $type . ".html.php")) {
+            $mail_param["template"] = $this->template_dir . $type . ".html.php";
 
             if (!empty($config_map["html_template"])) {
                 $mail_param["html_template"] = true;
@@ -325,45 +348,61 @@ class Email {
             }
         }
 
+        if (file_exists($this->template_dir . $type . ".txt.php")) {
+            $mail_param["template_plaintext"] = $this->template_dir . $type . ".txt.php";
+
+            if (!empty($config_map["plaintext_template"])) {
+                $mail_param["plaintext_template"] = true;
+            }
+        }
+
         return $mail_param;
     }
 
-    static public function send($param="", $extra=[], $attachments=[]) {
+    public static function send($param = "", $extra = [], $attachments = [])
+    {
         $that = static::$instance;
         $request = !empty($_REQUEST) ? $_REQUEST : [];
 
-        if (empty($param))
+        if (empty($param)) {
             return $that->_response_output("EMAIL_FAIL", "no parameters passed");
+        }
 
         $extra = array_merge($extra, $request);
 
         $valid = $that->validate($param, $extra);
 
-        if (!is_array($valid))
+        if (!is_array($valid)) {
             return $that->_response_output("EMAIL_FAIL", $valid);
+        }
 
         $mail_response = $that->_send_email($valid, $attachments);
 
-        if ($mail_response !== true)
+        if ($mail_response !== true) {
             return $that->_response_output("EMAIL_FAIL", "email not send: " . $mail_response);
+        }
 
         return $that->_response_output("SUCCESS", "email send");
     }
 
-    public static function view($type) {
+    public static function view($type)
+    {
         $that = static::$instance;
         $request = !empty($_REQUEST) ? $_REQUEST : [];
 
-        if (empty($type))
+        if (empty($type)) {
             return $that->_response_output("EMAIL_FAIL", "Email view not found");
+        }
 
         $param = $that->validate($type, $request);
 
-        if (!is_array($param))
+        if (!is_array($param)) {
             return $that->_response_output("NOT_FOUND", $param);
+        }
 
-        if (empty($param["template"]))
+        if (empty($param["template"])) {
             return $that->_response_output("NOT_FOUND", "Email template not found");
+        }
 
         $param["view_mode"] = true;
 
@@ -377,7 +416,8 @@ class Email {
         return $that->_response_output("SUCCESS", $message, ["content_type" => "html"]);
     }
 
-    private function _parse_template($template){
+    private function _parse_template($template)
+    {
         if (!function_exists('parse_email_template')) {
             return $template;
         }
