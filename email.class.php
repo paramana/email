@@ -389,6 +389,7 @@ class Email
     {
         $that = static::$instance;
         $request = !empty($_REQUEST) ? $_REQUEST : [];
+        $accepts = $_SERVER['HTTP_ACCEPT'] ?? 'text/html';
 
         if (empty($type)) {
             return $that->_response_output("EMAIL_FAIL", "Email view not found");
@@ -407,13 +408,19 @@ class Email
         $param["view_mode"] = true;
 
         ob_start();
-        require $param["template"];
+        if (strrpos($accepts, "text/plain") !== false) {
+            require $param["template_plaintext"];
+            $contentType = "text";
+        } else {
+            require $param["template"];
+            $contentType = "html";
+        }
         $message = ob_get_contents();
         ob_end_clean();
 
         $message = $that->_parse_template($message);
 
-        return $that->_response_output("SUCCESS", $message, ["content_type" => "html"]);
+        return $that->_response_output("SUCCESS", $message, ["content_type" => $contentType]);
     }
 
     private function _parse_template($template)
