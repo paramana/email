@@ -200,7 +200,7 @@ class Email
 
             $message = $this->_parse_template($message);
 
-            $plaintext_message = $message;
+            $plaintext_message = strip_tags($message);
         }
 
         $mail = new PHPMailer();
@@ -406,23 +406,14 @@ class Email
 
         $param["view_mode"] = true;
 
-        $headers = apache_request_headers();
-        $accepts = $headers['Accept'] ?? 'text/html';
-
         ob_start();
-        if ($accepts == 'text/html') {
-            require $param["template"];
-            $contentType = "html";
-        } else {
-            require $param["template_plaintext"];
-            $contentType = "text";
-        }
+        require $param["template"];
         $message = ob_get_contents();
         ob_end_clean();
 
         $message = $that->_parse_template($message);
 
-        return $that->_response_output("SUCCESS", $message, ["content_type" => $contentType]);
+        return $that->_response_output("SUCCESS", $message, ["content_type" => "html"]);
     }
 
     private function _parse_template($template)
