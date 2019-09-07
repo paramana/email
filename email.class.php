@@ -304,8 +304,8 @@ class Email
                 $param[$key] = $value["value"];
             }
 
-            if (empty($param[$key]) || strlen(trim($param[$key])) <= 0) {
-                if (!empty($value["required"]) && $param[$key] !== 0) {
+            if (!isset($param[$key]) || strlen(trim($param[$key])) <= 0) {
+                if (!empty($value["required"])) {
                     return $key . " is required";
                 }
 
