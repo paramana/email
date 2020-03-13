@@ -168,7 +168,7 @@ class Email
             return false;
         }
 
-        $email_to = (!defined('APP_ENV') || APP_ENV != "production") ? $this->default_email : $param["email_to"];
+        $email_to = $param["email_to"];
         $email_cc = !empty($param['email_cc']) ? $param['email_cc'] : '';
         $email_bcc = !empty($param['email_bcc']) ? $param['email_bcc']: '';
         $email_from = !empty($param["email_from"]) ? $param["email_from"] : $this->default_email;
