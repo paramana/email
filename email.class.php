@@ -219,13 +219,7 @@ class Email
                 $config_map = $this->smtp_config_map[$smtp_account_id];
 
                 $mail->SMTPAuth = $config_map["auth"];
-                $mail->SMTPSecure = empty($config_map["secure"])
-                    ? false
-                    : (
-                        $config_map["secure"] == 'tls'
-                        ? PHPMailer::ENCRYPTION_SMTPS
-                        : PHPMailer::ENCRYPTION_STARTTLS
-                    );
+                $mail->SMTPSecure = $config_map["secure"];
                 $mail->Host = $config_map["host"];
                 $mail->Port = $config_map["port"];
                 $mail->Username = $config_map["username"];
