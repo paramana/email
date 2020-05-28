@@ -1,4 +1,10 @@
 <?php
+
+// Import PHPMailer classes into the global namespace
+// These must be at the top of your script, not inside a function
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+
 /**
  * A class for sending email with PHPMailer
  */
@@ -206,14 +212,20 @@ class Email
         $mail = new PHPMailer();
 
         if ($this->use_smtp) {
-            $mail->SMTPDebug = $this->debug;
+            $mail->SMTPDebug = $this->debug ? SMTP::DEBUG_SERVER : false;
             $mail->isSMTP();
 
             if ($this->smtp_config_map && !empty($this->smtp_config_map[$smtp_account_id])) {
                 $config_map = $this->smtp_config_map[$smtp_account_id];
 
                 $mail->SMTPAuth = $config_map["auth"];
-                $mail->SMTPSecure = $config_map["secure"];
+                $mail->SMTPSecure = empty($config_map["secure"])
+                    ? false
+                    : (
+                        $config_map["secure"] == 'tls'
+                        ? PHPMailer::ENCRYPTION_SMTPS
+                        : PHPMailer::ENCRYPTION_STARTTLS
+                    );
                 $mail->Host = $config_map["host"];
                 $mail->Port = $config_map["port"];
                 $mail->Username = $config_map["username"];
