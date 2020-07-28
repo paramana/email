@@ -174,7 +174,12 @@ class Email
             return false;
         }
 
-        $email_to = $param["email_to"];
+        $email_to = trim($param["email_to"]);
+
+        if (empty($email_to)) {
+            return false;
+        }
+
         $email_cc = !empty($param['email_cc']) ? $param['email_cc'] : '';
         $email_bcc = !empty($param['email_bcc']) ? $param['email_bcc']: '';
         $email_from = !empty($param["email_from"]) ? $param["email_from"] : $this->default_email;
@@ -242,7 +247,7 @@ class Email
 
         array_map(function ($email_address) use ($mail) {
             if (!empty(trim($email_address))) {
-                $mail->addCC($email_address);
+                $mail->addCC(trim($email_address));
             }
         }, explode(',', $email_cc));
 
