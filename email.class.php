@@ -41,6 +41,11 @@ class Email
      */
     private $template_dir = "";
 
+    /*
+     * A honey pot field to protect from spam
+     */
+    private $honeypot_field = "honeypot";
+
     private $use_smtp = false;
 
     public $print_output = true;
@@ -70,6 +75,10 @@ class Email
 
         if (defined("EMAIL_DEFAULT_ADDRESS")) {
             $this->default_email = EMAIL_DEFAULT_ADDRESS;
+        }
+
+        if (defined("EMAIL_HONEYPOT_FIELD")) {
+            $this->honeypot_field = EMAIL_HONEYPOT_FIELD;
         }
 
         $this->template_dir = defined("EMAIL_TEMPLATES_DIR") ? EMAIL_TEMPLATES_DIR : __DIR__ . "/templates/";
@@ -381,6 +390,10 @@ class Email
 
         if (empty($param)) {
             return $that->_response_output("EMAIL_FAIL", "no parameters passed");
+        }
+
+        if (!empty($request[$that->honeypot_field]) && (bool) $request[$that->honeypot_field] == TRUE) {
+            return $that->_response_output("VALIDATION_ERROR", "spam");
         }
 
         $extra = array_merge($extra, $request);
