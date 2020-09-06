@@ -332,6 +332,10 @@ class Email
                 $param[$key] = stripslashes(strip_tags($param[$key]));
             }
 
+            if ($key == "subject") {
+                $param[$key] = stripslashes(strip_tags($param[$key]));
+            }
+
             if (!empty($value["validate"])) {
                 if ($value["validate"] == "email") {
                     $email_param = explode(",", $param[$key]);
