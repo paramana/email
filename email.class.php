@@ -425,7 +425,7 @@ class Email
         $param = $that->validate($type, $request);
 
         if (!is_array($param)) {
-            return $that->_response_output("NOT_FOUND", $param);
+            return $that->_response_output("EMAIL_FAIL", $param);
         }
 
         if (empty($param["template"])) {
