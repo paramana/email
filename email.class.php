@@ -348,7 +348,6 @@ class Email
             if (!empty($value["validate"])) {
                 if ($value["validate"] == "email") {
                     $email_param = explode(",", $param[$key]);
-
                     foreach ($email_param as $email) {
                         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                             return $email . " is not valid";
@@ -386,7 +385,7 @@ class Email
     public static function send($param = "", $extra = [], $attachments = [])
     {
         $that = static::$instance;
-        $request = !empty($_REQUEST) ? $_REQUEST : [];
+        $request = !empty($_REQUEST) ? $that->sanitize_request($_REQUEST) : [];
 
         if (empty($param)) {
             return $that->_response_output("EMAIL_FAIL", "no parameters passed");
@@ -416,7 +415,7 @@ class Email
     public static function view($type)
     {
         $that = static::$instance;
-        $request = !empty($_REQUEST) ? $_REQUEST : [];
+        $request = !empty($_REQUEST) ? $that->sanitize_request($_REQUEST) : [];
         $accepts = $_SERVER['HTTP_ACCEPT'] ?? 'text/html';
 
         if (empty($type)) {
@@ -458,5 +457,22 @@ class Email
         }
 
         return parse_email_template($template);
+    }
+
+    private function sanitize_request($request, $remove_breaks = false){
+        if ( !is_array($request) ) {
+            return stripslashes(strip_all_tags($request, $remove_breaks));
+        }
+
+        foreach ($request as &$value) {
+            if ( !is_array($value) ){
+                $value = stripslashes(strip_all_tags($value, $remove_breaks));
+            }
+            else {
+                $value = $this->sanitize_request($value, $remove_breaks);
+            }
+        }
+
+        return $request;
     }
 }
