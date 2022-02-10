@@ -16,6 +16,9 @@ class Email
      */
     private static $instance;
 
+    /** @var Securimage */
+    private $Securimage;
+
     /*
      * The mapping of mailing types and fields
      */
@@ -153,6 +156,11 @@ class Email
 
         $this->use_smtp = true;
         $this->smtp_config_map = $smtp_config_map;
+    }
+
+    public function set_secure_image_class($Securimage)
+    {
+        $this->Securimage = $Securimage;
     }
 
     private function _response_output($status = "SUCCESS", $message = "", $opt = [])
@@ -403,6 +411,12 @@ class Email
             return $that->_response_output("EMAIL_FAIL", $valid);
         }
 
+        if (!empty($valid["has_captch"])) {
+            if (empty($request["captcha_hash"]) || empty($request["captcha_code"]) || !$that->_validate_captcha($request["captcha_hash"], $request["captcha_code"])) {
+                return $that->_response_output("VALIDATION_ERROR", "Code did not match");
+            }
+        }
+
         $mail_response = $that->_send_email($valid, $attachments);
 
         if ($mail_response !== true) {
@@ -474,5 +488,42 @@ class Email
         }
 
         return $request;
+    }
+
+    public static function get_captcha()
+    {
+        $that = static::$instance;
+
+        if (empty($that->Securimage)) {
+            return $that->_response_output("NOT_FOUND", "");;
+        }
+
+        $captcha_code = $that->Securimage->getCode(true);
+
+        if (empty($captcha_code)) {
+            $that->Securimage->createCode();
+            $captcha_code = $that->Securimage->getCode(true);
+        }
+
+        return $that->_response_output("SUCCESS", $captcha_code);
+    }
+
+    private function _validate_captcha($captcha_hash, $captcha_code)
+    {
+        if (empty($this->Securimage)) {
+            return true;
+        }
+
+        $captcha = $this->Securimage->getCode(true);
+
+        if (!$this->Securimage->check($captcha_code)) {
+            return false;
+        }
+
+        if (md5($captcha["code"] . $captcha["time"]) != $captcha_hash) {
+            return false;
+        }
+
+        return true;
     }
 }
