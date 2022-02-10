@@ -328,7 +328,7 @@ class Email
         foreach ($config_map as $key => $value) {
             if (!$view && $key == "has_captcha" && !empty($value)) {
                 if (empty($param["captcha_hash"]) || empty($param["captcha_code"]) || !$this->_validate_captcha($param["captcha_hash"], $param["captcha_code"])) {
-                    return "Captch is not valid";
+                    return "error-captcha";
                 }
             }
 
