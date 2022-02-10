@@ -310,11 +310,13 @@ class Email
     /*
      * Checks the email parameters based on the list of options * from the mail_maps
      *
+     * @param string $type the name of the email
      * @param array $param the parameters passed
+     * @param boolean $view if is a view or not
      *
      * @return mixed depends on the handle of your response function
      */
-    private function validate($type = "", array $param = [])
+    private function validate($type = "", array $param = [], $view=false)
     {
         if (!array_key_exists($type, $this->mail_maps) || empty($this->mail_maps[$type])) {
             return "No email map found";
@@ -324,6 +326,12 @@ class Email
         $mail_param = [];
 
         foreach ($config_map as $key => $value) {
+            if (!$view && $key == "has_captcha" && !empty($value)) {
+                if (empty($param["captcha_hash"]) || empty($param["captcha_code"]) || !$this->_validate_captcha($param["captcha_hash"], $param["captcha_code"])) {
+                    return "Captch is not valid";
+                }
+            }
+
             if (!empty($value["id"]) && $key != $value["id"]) {
                 $param[$key] = $param[$value["id"]];
             }
@@ -411,12 +419,6 @@ class Email
             return $that->_response_output("EMAIL_FAIL", $valid);
         }
 
-        if (!empty($valid["has_captch"])) {
-            if (empty($request["captcha_hash"]) || empty($request["captcha_code"]) || !$that->_validate_captcha($request["captcha_hash"], $request["captcha_code"])) {
-                return $that->_response_output("VALIDATION_ERROR", "Code did not match");
-            }
-        }
-
         $mail_response = $that->_send_email($valid, $attachments);
 
         if ($mail_response !== true) {
@@ -436,7 +438,7 @@ class Email
             return $that->_response_output("EMAIL_FAIL", "Email view not found");
         }
 
-        $param = $that->validate($type, $request);
+        $param = $that->validate($type, $request, true);
 
         if (!is_array($param)) {
             return $that->_response_output("EMAIL_FAIL", $param);
