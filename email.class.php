@@ -364,7 +364,9 @@ class Email
             if (!empty($value["validate"])) {
                 if ($value["validate"] == "email") {
                     $email_param = explode(",", $param[$key]);
-                    foreach ($email_param as $email) {
+                    foreach ($email_param as &$email) {
+                        $email = trim($email);
+
                         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                             return $email . " is not valid";
                         }
