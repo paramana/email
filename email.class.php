@@ -62,7 +62,7 @@ class Email
     private $smtp_username;
     private $smtp_password;
 
-    final private function __construct()
+    private function __construct()
     {
         if (isset(static::$instance)) {
             throw new Exception("An instance of " . get_called_class() . " already exists.");
@@ -114,7 +114,7 @@ class Email
      * No clone allowed,
      * both internally and externally
      */
-    final private function __clone()
+    private function __clone()
     {
         throw new Exception("An instance of " . get_called_class() . " cannot be cloned.");
     }
