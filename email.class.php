@@ -216,7 +216,7 @@ class Email
             $message = ob_get_contents();
             ob_end_clean();
 
-            $message = $this->_parse_template($message);
+            $message = $this->_parse_template($message, $param);
             $html_message = empty($param["html_template"]) ? preg_replace('/\\n/', '<br/>', $message) : $message;
         }
 
@@ -226,7 +226,7 @@ class Email
             $message = ob_get_contents();
             ob_end_clean();
 
-            $message = $this->_parse_template($message);
+            $message = $this->_parse_template($message, $param);
 
             $plaintext_message = strip_tags($message);
         }
@@ -463,18 +463,18 @@ class Email
         $message = ob_get_contents();
         ob_end_clean();
 
-        $message = $that->_parse_template($message);
+        $message = $that->_parse_template($message, $param);
 
         return $that->_response_output("SUCCESS", $message, ["content_type" => $contentType]);
     }
 
-    private function _parse_template($template)
+    private function _parse_template($template, $param)
     {
         if (!function_exists('parse_email_template')) {
             return $template;
         }
 
-        return parse_email_template($template);
+        return parse_email_template($template, $param);
     }
 
     private function sanitize_request($request, $remove_breaks = false){
