@@ -518,6 +518,10 @@ class Email
             return true;
         }
 
+        if (!is_string($captcha_code)) {
+            return false;
+        }
+
         $captcha = $this->Securimage->getCode(true);
 
         if (!$this->Securimage->check($captcha_code)) {
