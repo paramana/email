@@ -347,6 +347,7 @@ class Email
 
                 if (!isset($value["default"])) {
                     $param[$key] = "";
+                    $mail_param[$key] = "";
                     continue;
                 }
 
